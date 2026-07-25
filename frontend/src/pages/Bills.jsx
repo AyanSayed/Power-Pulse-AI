@@ -13,6 +13,28 @@ import BillHistory from "../components/BillHistory";
 function Bills() {
   const { bills, latestBill } = useBill();
 
+  if (!latestBill) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Bills
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Manage your electricity bills, upload new bills and review your
+            historical consumption.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center text-gray-500">
+          Loading your bills...
+        </div>
+
+        <UploadBill />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
 

@@ -1,7 +1,11 @@
+require("dns").setServers(["8.8.8.8", "8.8.4.4"]);
+
+const weatherRoutes = require("./routes/weather");
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const billRoutes = require("./routes/billRoutes");
 const { PythonShell } = require("python-shell");
 const path = require("path");
 const multer = require("multer");
@@ -13,71 +17,99 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// Multer setup
+// Multer setup — restrict to PDF/JPG/PNG, max 5MB
 const upload = multer({
-    dest: "uploads/"
+    dest: "uploads/",
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("INVALID_FILE_TYPE"));
+        }
+    }
 });
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use("/api/bills", billRoutes);
+app.use("/api/weather", weatherRoutes);
+app.use("/api/analysis", require("./routes/analysis"));
+app.use("/api/dashboard", require("./routes/dashboard"));
 // Test Route
 app.get("/", (req, res) => {
     res.send("🚀 Power Pulse AI Backend is Running...");
 });
 
-// AI Analysis Route
-app.get("/api/analysis", async (req, res) => {
-try {
-    const results = await PythonShell.run(
-        path.join(__dirname, "../ai/analysis.py"),
-        {
-            pythonPath: "python",
-            args: [req.file.path]
+// =============================
+// Upload Bill + AI Analysis
+// =============================
+// =============================
+// Upload Bill + AI Analysis
+// =============================
+app.post("/api/upload", (req, res) => {
+    upload.single("file")(req, res, async (err) => {
+        // Handle multer-specific errors (size limit, wrong file type)
+        if (err) {
+            if (err.message === "INVALID_FILE_TYPE") {
+                return res.status(400).json({ error: "Only PDF, JPG, and PNG files are allowed." });
+            }
+            if (err.code === "LIMIT_FILE_SIZE") {
+                return res.status(400).json({ error: "File is too large. Max size is 5MB." });
+            }
+            console.error("Upload error:", err.message);
+            return res.status(400).json({ error: "File upload failed." });
         }
-    );
 
-    res.json(JSON.parse(results[results.length - 1]));
-
-} catch (err) {
-    console.error(err);   // Add ONLY this line
-    res.status(500).json({ error: "Failed to run AI analysis" });
-}
-});
-
-app.post("/api/upload", upload.single("file"), async (req, res) => {
-    try {
         if (!req.file) {
-            return res.status(400).json({
-                error: "No file uploaded"
-            });
+            return res.status(400).json({ error: "No file uploaded." });
         }
 
-        console.log("Uploaded:", req.file.filename);
+        try {
+            console.log("Uploaded:", req.file.filename);
 
-        const results = await PythonShell.run(
-    path.join(__dirname, "../ai/analysis.py"),
-    {
-        pythonPath: "python",
-        args: [req.file.path]
-    }
-);
+            const results = await PythonShell.run(
+                path.join(__dirname, "../ai/analysis.py"),
+                {
+                    pythonPath: "python",
+                    args: [req.file.path]
+                }
+            );
 
-        const output = JSON.parse(results.join(""));
+            if (!results || results.length === 0) {
+                return res.status(422).json({ error: "Could not extract data from this file. Try a clearer scan or a digital PDF." });
+            }
 
-        res.json(output);
+            let output;
+            try {
+                output = JSON.parse(results.join(""));
+            } catch (parseErr) {
+                console.error("Failed to parse analysis.py output:", results);
+                return res.status(422).json({ error: "Could not read this bill. The file format may not be supported." });
+            }
 
-    } catch (err) {
-        console.error(err);
+            // Sanity check: did we actually extract meaningful data?
+            if (!output.bill || !output.units) {
+                return res.status(422).json({ error: "This doesn't look like a valid electricity bill, or key fields couldn't be found." });
+            }
 
-        res.status(500).json({
-            error: "Failed to process CSV"
-        });
-    }
+            res.json(output);
+        } catch (err) {
+            console.error("Processing error:", err.message);
+            res.status(500).json({ error: "Failed to process bill." });
+        }
+    });
 });
-// Server
-const PORT = process.env.PORT || 5000;
 
+// =============================
+// Upload CSV
+// =============================
 app.post("/api/upload-csv", upload.single("file"), async (req, res) => {
     try {
         if (!req.file) {
@@ -103,6 +135,9 @@ app.post("/api/upload-csv", upload.single("file"), async (req, res) => {
         });
     }
 });
+
+// Start Server
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);

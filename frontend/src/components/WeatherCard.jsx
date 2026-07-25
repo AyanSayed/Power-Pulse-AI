@@ -4,8 +4,27 @@ import {
   FaThermometerHalf,
   FaWind,
 } from "react-icons/fa";
+import { useBill } from "../context/BillContext";
+
+// Rough mapping of Open-Meteo WMO weather codes to readable labels
+function weatherCodeToLabel(code) {
+  if (code === null || code === undefined) return "—";
+  if (code === 0) return "Clear";
+  if ([1, 2, 3].includes(code)) return "Partly Cloudy";
+  if ([45, 48].includes(code)) return "Foggy";
+  if ([51, 53, 55, 56, 57].includes(code)) return "Drizzle";
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "Rainy";
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return "Snowy";
+  if ([95, 96, 99].includes(code)) return "Thunderstorm";
+  return "Cloudy";
+}
 
 function WeatherCard() {
+  const { weatherTemp, weatherHumidity, weatherCondition } = useBill();
+
+  const conditionLabel = weatherCodeToLabel(weatherCondition);
+  const isHot = weatherTemp !== null && weatherTemp > 30;
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full hover:shadow-lg transition-all duration-300">
       {/* Header */}
@@ -34,7 +53,7 @@ function WeatherCard() {
           </div>
 
           <span className="font-bold text-lg">
-            32°C
+            {weatherTemp !== null ? `${weatherTemp}°C` : "Loading..."}
           </span>
         </div>
 
@@ -45,7 +64,7 @@ function WeatherCard() {
           </div>
 
           <span className="font-bold text-lg">
-            72%
+            {weatherHumidity !== null ? `${weatherHumidity}%` : "Loading..."}
           </span>
         </div>
 
@@ -56,20 +75,22 @@ function WeatherCard() {
           </div>
 
           <span className="font-semibold">
-            Cloudy
+            {conditionLabel}
           </span>
         </div>
 
       </div>
 
       {/* AI Note */}
-      <div className="mt-6 border-t pt-5">
-        <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
-          <p className="text-sm text-gray-700 leading-6">
-            🌡 Higher temperatures are likely increasing AC usage, which may contribute to a higher electricity bill this month.
-          </p>
+      {isHot && (
+        <div className="mt-6 border-t pt-5">
+          <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
+            <p className="text-sm text-gray-700 leading-6">
+              🌡 Higher temperatures are likely increasing AC usage, which may contribute to a higher electricity bill this month.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

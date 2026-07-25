@@ -5,30 +5,53 @@ import { useBill } from "../context/BillContext";
 import { useToast } from "../context/ToastContext";
 
 function UploadBill() {
-  const [fileName, setFileName] = useState(null);
+  const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [extracted, setExtracted] = useState(null);
-  const { generateExtraction, confirmBill } = useBill();
+  const { confirmBill } = useBill();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleFiles = (files) => {
-    if (files && files[0]) {
-      setFileName(files[0].name);
-      setExtracted(null);
-    }
-  };
+  if (files && files[0]) {
+    setFile(files[0]);
+    setExtracted(null);
+  }
+};
 
-  const handleProcess = () => {
-    setProcessing(true);
-    // TODO: replace with a real OCR API call once the backend is ready.
-    // generateExtraction() below simulates what that response would look like.
-    setTimeout(() => {
-      setExtracted(generateExtraction());
+  const handleProcess = async () => {
+  if (!file) return;
+
+  setProcessing(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("http://localhost:5000/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    console.log(data);
+
+    if (!res.ok) {
+      // Backend sent a proper error message (400/422/500) — show it, don't set extracted
+      showToast(data.error || "Failed to process bill.", "error");
       setProcessing(false);
-    }, 1200);
-  };
+      return;
+    }
+
+    setExtracted(data);
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to process bill. Please try again.", "error");
+  }
+
+  setProcessing(false);
+};
 
   const handleConfirm = () => {
     confirmBill(extracted);
@@ -73,18 +96,18 @@ function UploadBill() {
         </label>
       </div>
 
-      {fileName && !extracted && (
+      {file && !extracted && (
         <div className="mt-5 bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4">
           <FaFilePdf className="text-coral text-2xl" />
           <div className="flex-1">
-            <p className="text-ink font-medium text-sm">{fileName}</p>
+            <p className="text-ink font-medium text-sm">{file.name}</p>
             <p className="text-slate text-xs">Ready to process</p>
           </div>
           <FaCheckCircle className="text-teal text-lg" />
         </div>
       )}
 
-      {fileName && !extracted && (
+      {file && !extracted && (
         <button
           disabled={processing}
           onClick={handleProcess}

@@ -19,27 +19,39 @@ function Navbar({ onMenuClick }) {
   const { latestBill, predictedBill, aiExplanation, weatherTemp } = useBill();
 
   const notifications = [
-    {
-      id: 1,
-      icon: "⚡",
-      title: "Bill Uploaded",
-      summary: "Bill uploaded successfully.",
-      detail: `Your electricity bill for ${latestBill.month} was processed successfully. Units: ${latestBill.units} kWh, Amount: ₹${latestBill.bill.toLocaleString("en-IN")}, Status: ${latestBill.status}.`,
-    },
-    {
-      id: 2,
-      icon: "📈",
-      title: "AI Prediction",
-      summary: `AI predicts next month's bill: ₹${predictedBill.toLocaleString("en-IN")}.`,
-      detail: `${aiExplanation} Based on this, your predicted next bill is ₹${predictedBill.toLocaleString("en-IN")}.`,
-    },
-    {
-      id: 3,
-      icon: "🌦",
-      title: "Weather Alert",
-      summary: "Weather may increase electricity usage today.",
-      detail: `Current temperature is ${weatherTemp}°C. Higher temperatures typically increase AC usage, which can raise your electricity bill this month.`,
-    },
+    ...(latestBill
+      ? [
+          {
+            id: 1,
+            icon: "⚡",
+            title: "Bill Uploaded",
+            summary: "Bill uploaded successfully.",
+            detail: `Your electricity bill for ${latestBill.month} was processed successfully. Units: ${latestBill.units} kWh, Amount: ₹${latestBill.bill.toLocaleString("en-IN")}, Status: ${latestBill.status}.`,
+          },
+        ]
+      : []),
+    ...(latestBill && predictedBill
+      ? [
+          {
+            id: 2,
+            icon: "📈",
+            title: "AI Prediction",
+            summary: `AI predicts next month's bill: ₹${predictedBill.toLocaleString("en-IN")}.`,
+            detail: `${aiExplanation} Based on this, your predicted next bill is ₹${predictedBill.toLocaleString("en-IN")}.`,
+          },
+        ]
+      : []),
+    ...(weatherTemp !== null && weatherTemp !== undefined
+      ? [
+          {
+            id: 3,
+            icon: "🌦",
+            title: "Weather Alert",
+            summary: "Weather may increase electricity usage today.",
+            detail: `Current temperature is ${weatherTemp}°C. Higher temperatures typically increase AC usage, which can raise your electricity bill this month.`,
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {

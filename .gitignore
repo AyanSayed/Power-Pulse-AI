@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Uploaded bill files (user data, shouldn't be in repo)
+backend/uploads/*
+!backend/uploads/.gitkeep

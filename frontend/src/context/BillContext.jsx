@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-
+import axios from "axios";
 const BillContext = createContext(null);
 
 const MONTHS = [
@@ -7,73 +7,113 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-// Dummy weather reading shared with WeatherCard's static display.
-// Replace with a real weather API value once the backend is wired up.
-const CURRENT_TEMP_C = 32;
-
-const seedBills = [
-  { id: 1, month: "January", units: 220, bill: 1800, status: "Normal" },
-  { id: 2, month: "February", units: 245, bill: 1950, status: "Normal" },
-  { id: 3, month: "March", units: 285, bill: 2300, status: "High" },
-  { id: 4, month: "April", units: 310, bill: 2600, status: "High" },
-  { id: 5, month: "May", units: 295, bill: 2450, status: "Normal" },
-];
-
-function loadBills() {
-  try {
-    const saved = localStorage.getItem("pp_bills");
-    return saved ? JSON.parse(saved) : seedBills;
-  } catch {
-    return seedBills;
-  }
-}
+const CITY = "Mumbai"; // hardcoded for demo — no user location settings yet
 
 export function BillProvider({ children }) {
-  const [bills, setBills] = useState(loadBills);
+  const [bills, setBills] = useState([]);
   const [hasBill, setHasBill] = useState(
     () => localStorage.getItem("pp_has_bill") === "true"
   );
 
-  useEffect(() => {
-    localStorage.setItem("pp_bills", JSON.stringify(bills));
-  }, [bills]);
+  const [weather, setWeather] = useState(null); // { temperature, humidity, windspeed, weathercode }
+  const [aiData, setAiData] = useState(null);    // { stats, insights } from /api/analysis
 
-  const latestBill = bills[bills.length - 1];
+  // Fetch bills on load
+  useEffect(() => {
+    const fetchBills = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/bills");
+        setBills(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchBills();
+  }, []);
+
+  // Fetch weather once
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/weather/${CITY}`);
+        setWeather(res.data);
+      } catch (err) {
+        console.error("Weather fetch failed:", err);
+      }
+    };
+    fetchWeather();
+  }, []);
+
+  // Fetch AI analysis whenever bills change (new bill uploaded -> refresh insights)
+  useEffect(() => {
+    if (bills.length === 0) return;
+    const fetchAnalysis = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/analysis");
+        setAiData(res.data);
+      } catch (err) {
+        console.error("AI analysis fetch failed:", err);
+      }
+    };
+    fetchAnalysis();
+  }, [bills.length]);
+
+  const latestBill = bills.length ? bills[bills.length - 1] : null;
   const previousBill = bills.length > 1 ? bills[bills.length - 2] : null;
 
-  const trendPercent = previousBill
+  if (!latestBill) {
+    return (
+      <BillContext.Provider
+        value={{
+          bills: [],
+          hasBill,
+          latestBill: null,
+          previousBill: null,
+          trendPercent: 0,
+          energyScore: 0,
+          predictedBill: 0,
+          aiExplanation: "Upload a bill to get started.",
+          weatherTemp: weather?.temperature ?? null,
+          weatherHumidity: weather?.humidity ?? null,
+          weatherCondition: weather?.weathercode ?? null,
+          carbonKg: 0,
+          applianceBreakdown: [],
+          faultAlert: null,
+          generateExtraction: () => null,
+          confirmBill: async () => {},
+        }}
+      >
+        {children}
+      </BillContext.Provider>
+    );
+  }
+
+  // Prefer real backend-computed values (from /api/analysis) when available,
+  // fall back to a simple client-side estimate while the AI call is in flight.
+  const trendPercent = aiData?.stats?.percentChange
+    ? Number(aiData.stats.percentChange)
+    : previousBill
     ? ((latestBill.units - previousBill.units) / previousBill.units) * 100
     : 0;
 
-  // Rule-based stand-ins for what the AI/backend team will eventually compute
-  // from real historical + weather data. Same shape, real logic replaces this.
-  const weatherPenalty = CURRENT_TEMP_C > 30 ? 6 : 0;
+  const predictedBill = aiData?.stats?.predictedNextBill
+    ? Number(aiData.stats.predictedNextBill)
+    : Math.round(latestBill.bill * (1 + Math.max(trendPercent, 0) / 100 + 0.03));
+
+  const aiExplanation = aiData?.insights?.summary
+    ?? (previousBill
+      ? "Loading AI insights..."
+      : "Upload a few more bills so I can start comparing month-to-month trends.");
+
+  const weatherTemp = weather?.temperature ?? null;
+  const weatherPenalty = weatherTemp && weatherTemp > 30 ? 6 : 0;
   const trendPenalty = Math.max(trendPercent, 0) * 1.4;
   const energyScore = Math.max(0, Math.min(100, Math.round(100 - trendPenalty - weatherPenalty)));
 
-  const predictedBill = Math.round(
-    latestBill.bill * (1 + Math.max(trendPercent, 0) / 100 + 0.03)
-  );
-
-  let aiExplanation;
-  if (!previousBill) {
-    aiExplanation = "Upload a few more bills so I can start comparing month-to-month trends.";
-  } else if (trendPercent > 3) {
-    aiExplanation = `Your bill increased mainly due to a ${trendPercent.toFixed(0)}% rise in consumption${
-      weatherPenalty ? ", likely driven by higher temperatures this month" : ""
-    }.`;
-  } else if (trendPercent < -3) {
-    aiExplanation = `Nice work — usage dropped ${Math.abs(trendPercent).toFixed(0)}% compared to last month.`;
-  } else {
-    aiExplanation = "Your usage has stayed roughly stable compared to last month.";
-  }
-
-  // Emission factor is an approximate India grid average (kg CO2 per kWh).
-  // Swap for a region-specific/real-time factor once the backend provides one.
+  // No smart-meter/appliance-level backend yet — these stay simulated.
   const EMISSION_FACTOR = 0.82;
   const carbonKg = Math.round(latestBill.units * EMISSION_FACTOR);
 
-  // Dummy per-appliance split until real smart-meter/appliance-level data exists.
   const applianceBreakdown = [
     { name: "AC Unit", pct: 42, color: "coral" },
     { name: "Water Heater", pct: 24, color: "amber" },
@@ -81,15 +121,12 @@ export function BillProvider({ children }) {
     { name: "Other Appliances", pct: 19, color: "navy" },
   ];
 
-  // Simulated fault detection: flags the same appliance the deck's mockup
-  // highlights whenever usage trend crosses a threshold. Replace with real
-  // per-appliance anomaly detection once that data is available.
-  const faultAlert =
-    trendPercent > 8
-      ? { appliance: "Water Heater", percent: Math.min(60, Math.round(trendPercent * 2.2)) }
-      : null;
+  const faultAlert = aiData?.insights?.alert
+    ? { appliance: "Unusual usage", percent: Math.round(Math.abs(trendPercent)) }
+    : trendPercent > 8
+    ? { appliance: "Water Heater", percent: Math.min(60, Math.round(trendPercent * 2.2)) }
+    : null;
 
-  // Simulates what an OCR service would return after reading an uploaded bill.
   function generateExtraction() {
     const nextMonthIndex = (MONTHS.indexOf(latestBill.month) + 1) % 12;
     const variance = 0.9 + Math.random() * 0.3;
@@ -103,18 +140,27 @@ export function BillProvider({ children }) {
     };
   }
 
-  function confirmBill(extracted) {
-    const status = extracted.units > latestBill.units * 1.08 ? "High" : "Normal";
-    const newBill = {
-      id: bills.length + 1,
-      month: extracted.month,
-      units: extracted.units,
-      bill: extracted.bill,
-      status,
-    };
-    setBills((prev) => [...prev, newBill]);
-    localStorage.setItem("pp_has_bill", "true");
-    setHasBill(true);
+  async function confirmBill(extracted) {
+    try {
+      const status = extracted.units > latestBill.units * 1.08 ? "High" : "Normal";
+
+      await axios.post("http://localhost:5000/api/bills", {
+        user: latestBill.user,
+        month: extracted.month,
+        units: extracted.units,
+        bill: extracted.bill,
+        status,
+        consumerNumber: extracted.consumerNumber,
+      });
+
+      const res = await axios.get("http://localhost:5000/api/bills");
+      setBills(res.data);
+
+      localStorage.setItem("pp_has_bill", "true");
+      setHasBill(true);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
@@ -128,7 +174,9 @@ export function BillProvider({ children }) {
         energyScore,
         predictedBill,
         aiExplanation,
-        weatherTemp: CURRENT_TEMP_C,
+        weatherTemp,
+        weatherHumidity: weather?.humidity ?? null,
+        weatherCondition: weather?.weathercode ?? null,
         carbonKg,
         applianceBreakdown,
         faultAlert,
