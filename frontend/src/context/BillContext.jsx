@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 const BillContext = createContext(null);
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -22,7 +24,7 @@ export function BillProvider({ children }) {
   useEffect(() => {
     const fetchBills = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/bills");
+        const res = await axios.get(`${API_URL}/api/bills`);
         setBills(res.data);
       } catch (err) {
         console.error(err);
@@ -35,7 +37,7 @@ export function BillProvider({ children }) {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/weather/${CITY}`);
+        const res = await axios.get(`${API_URL}/api/weather/${CITY}`);
         setWeather(res.data);
       } catch (err) {
         console.error("Weather fetch failed:", err);
@@ -49,7 +51,7 @@ export function BillProvider({ children }) {
     if (bills.length === 0) return;
     const fetchAnalysis = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/analysis");
+        const res = await axios.get(`${API_URL}/api/analysis`);
         setAiData(res.data);
       } catch (err) {
         console.error("AI analysis fetch failed:", err);
@@ -144,7 +146,7 @@ export function BillProvider({ children }) {
     try {
       const status = extracted.units > latestBill.units * 1.08 ? "High" : "Normal";
 
-      await axios.post("http://localhost:5000/api/bills", {
+      await axios.post(`${API_URL}/api/bills`, {
         user: latestBill.user,
         month: extracted.month,
         units: extracted.units,
@@ -153,7 +155,7 @@ export function BillProvider({ children }) {
         consumerNumber: extracted.consumerNumber,
       });
 
-      const res = await axios.get("http://localhost:5000/api/bills");
+      const res = await axios.get(`${API_URL}/api/bills`);
       setBills(res.data);
 
       localStorage.setItem("pp_has_bill", "true");
