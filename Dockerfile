@@ -12,7 +12,7 @@ RUN cd backend && npm install
 
 # Copy ai folder and install Python deps
 COPY ai/requirements.txt ai/
-RUN pip3 install -r ai/requirements.txt --break-system-packages
+RUN pip3 install -r ai/requirements.txt
 
 # Copy the rest of both folders
 COPY backend/ backend/
