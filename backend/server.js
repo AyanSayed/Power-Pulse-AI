@@ -42,6 +42,7 @@ app.use("/api/bills", billRoutes);
 app.use("/api/weather", weatherRoutes);
 app.use("/api/analysis", require("./routes/analysis"));
 app.use("/api/dashboard", require("./routes/dashboard"));
+app.use("/api/meter-reading", require("./routes/meterReading"));
 // Test Route
 app.get("/", (req, res) => {
     res.send("🚀 Power Pulse AI Backend is Running...");
