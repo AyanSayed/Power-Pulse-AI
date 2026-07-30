@@ -13,9 +13,6 @@ const CITY = "Mumbai"; // hardcoded for demo — no user location settings yet
 
 export function BillProvider({ children }) {
   const [bills, setBills] = useState([]);
-  const [hasBill, setHasBill] = useState(
-    () => localStorage.getItem("pp_has_bill") === "true"
-  );
 
   const [weather, setWeather] = useState(null); // { temperature, humidity, windspeed, weathercode }
   const [aiData, setAiData] = useState(null);    // { stats, insights } from /api/analysis
@@ -62,6 +59,10 @@ export function BillProvider({ children }) {
 
   const latestBill = bills.length ? bills[bills.length - 1] : null;
   const previousBill = bills.length > 1 ? bills[bills.length - 2] : null;
+
+  // Always derived live from real data — can never drift out of sync,
+  // no matter how many times bills are added or deleted.
+  const hasBill = !!latestBill;
 
   if (!latestBill) {
     return (
@@ -157,9 +158,7 @@ export function BillProvider({ children }) {
 
       const res = await axios.get(`${API_URL}/api/bills`);
       setBills(res.data);
-
-      localStorage.setItem("pp_has_bill", "true");
-      setHasBill(true);
+      // hasBill is derived from bills/latestBill above — no manual flag to set.
     } catch (err) {
       console.error(err);
     }
