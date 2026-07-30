@@ -23,7 +23,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 function UsageChart({ data }) {
-  const chartData = data?.map((b) => ({ month: b.month, units: b.units })) || [];
+  const chartData = Array.isArray(data) ? data.map((b) => ({ month: b.month, units: b.units })) : [];
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-amber p-6 card-lift">

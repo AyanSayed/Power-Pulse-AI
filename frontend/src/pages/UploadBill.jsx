@@ -139,7 +139,7 @@ function UploadBill() {
               <FaMoneyBillWave className="text-slate" />
               <div>
                 <p className="text-slate text-xs">Bill Amount</p>
-                <p className="tabular font-medium text-ink">₹{extracted.bill.toLocaleString("en-IN")}</p>
+                <p className="tabular font-medium text-ink">₹{(extracted.bill ?? 0).toLocaleString("en-IN")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5 text-sm">

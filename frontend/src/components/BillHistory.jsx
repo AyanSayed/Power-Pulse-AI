@@ -17,10 +17,10 @@ function BillHistory({ bills = [] }) {
           </thead>
           <tbody>
             {rows.map((bill) => (
-              <tr key={bill.id} className="border-b border-gray-50 hover:bg-mist transition">
+              <tr key={bill._id} className="border-b border-gray-50 hover:bg-mist transition">
                 <td className="py-3.5 text-ink font-medium">{bill.month}</td>
                 <td className="py-3.5 tabular text-slate">{bill.units} kWh</td>
-                <td className="py-3.5 tabular text-ink">₹{bill.bill.toLocaleString("en-IN")}</td>
+                <td className="py-3.5 tabular text-ink">₹{(bill.bill ?? 0).toLocaleString("en-IN")}</td>
                 <td className="py-3.5">
                   <span
                     className={`px-2.5 py-1 rounded-full text-xs font-medium ${

@@ -75,7 +75,7 @@ function AIInsights({
           </div>
 
           <p className="text-3xl font-bold text-gray-900">
-            ₹{predictedBill.toLocaleString("en-IN")}
+            ₹{(predictedBill ?? 0).toLocaleString("en-IN")}
           </p>
 
           <p className="text-xs text-gray-500 mt-2">

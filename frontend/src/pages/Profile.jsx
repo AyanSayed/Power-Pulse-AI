@@ -309,7 +309,7 @@ function Profile() {
               </span>
 
               <span className="font-semibold">
-                ₹{latestBill.bill.toLocaleString("en-IN")}
+                ₹{(latestBill.bill ?? 0).toLocaleString("en-IN")}
               </span>
 
             </div>

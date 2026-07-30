@@ -42,7 +42,7 @@ function AISummaryPreview() {
           </p>
 
           <p className="text-xl font-bold text-indigo-600">
-            ₹{predictedBill.toLocaleString("en-IN")}
+            ₹{(predictedBill ?? 0).toLocaleString("en-IN")}
           </p>
         </div>
 

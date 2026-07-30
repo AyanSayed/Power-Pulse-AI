@@ -7,6 +7,7 @@ import {
   FaUser,
   FaTimes,
   FaHistory,
+  FaChartLine,
 } from "react-icons/fa";
 
 const links = [
@@ -24,6 +25,11 @@ const links = [
     to: "/ai-insights",
     label: "AI Insights",
     icon: <FaBrain />,
+  },
+  {
+    to: "/live-meter",
+    label: "Live Meter",
+    icon: <FaChartLine />,
   },
   {
     to: "/profile",

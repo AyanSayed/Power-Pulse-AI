@@ -26,7 +26,7 @@ function Navbar({ onMenuClick }) {
             icon: "⚡",
             title: "Bill Uploaded",
             summary: "Bill uploaded successfully.",
-            detail: `Your electricity bill for ${latestBill.month} was processed successfully. Units: ${latestBill.units} kWh, Amount: ₹${latestBill.bill.toLocaleString("en-IN")}, Status: ${latestBill.status}.`,
+           detail: `Your electricity bill for ${latestBill.month} was processed successfully. Units: ${latestBill.units} kWh, Amount: ₹${(latestBill.bill ?? 0).toLocaleString("en-IN")}, Status: ${latestBill.status}.`,
           },
         ]
       : []),
@@ -36,8 +36,8 @@ function Navbar({ onMenuClick }) {
             id: 2,
             icon: "📈",
             title: "AI Prediction",
-            summary: `AI predicts next month's bill: ₹${predictedBill.toLocaleString("en-IN")}.`,
-            detail: `${aiExplanation} Based on this, your predicted next bill is ₹${predictedBill.toLocaleString("en-IN")}.`,
+            summary: `AI predicts next month's bill: ₹${(predictedBill ?? 0).toLocaleString("en-IN")}.`,
+            detail: `${aiExplanation} Based on this, your predicted next bill is ₹${(predictedBill ?? 0).toLocaleString("en-IN")}.`,
           },
         ]
       : []),

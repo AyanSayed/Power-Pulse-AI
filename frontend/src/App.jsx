@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LiveMeter from "./pages/LiveMeter";
 
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -56,6 +57,11 @@ function App() {
                   <Route
                     path="/profile"
                     element={<Profile />}
+                  />
+
+                  <Route
+                    path="/live-meter"
+                    element={<LiveMeter />}
                   />
 
                 </Route>

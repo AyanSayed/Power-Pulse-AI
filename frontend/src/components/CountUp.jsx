@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 
-function CountUp({ end, duration = 1000, prefix = "", suffix = "", decimals = 0 }) {
-  const [value, setValue] = useState(0);
+function CountUp({ end = 0, duration = 1000, prefix = "", suffix = "", decimals = 0 }) {  const [value, setValue] = useState(0);
   const frameRef = useRef(null);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ function CountUp({ end, duration = 1000, prefix = "", suffix = "", decimals = 0 
   return (
     <span className="tabular">
       {prefix}
-      {value.toLocaleString("en-IN", {
+      {(value ?? 0).toLocaleString("en-IN", {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       })}

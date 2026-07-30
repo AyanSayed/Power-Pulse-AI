@@ -101,7 +101,7 @@ function Bills() {
             </div>
 
             <p className="text-2xl font-bold">
-              ₹{latestBill.bill.toLocaleString("en-IN")}
+              ₹{(latestBill.bill ?? 0).toLocaleString("en-IN")}
             </p>
 
           </div>
