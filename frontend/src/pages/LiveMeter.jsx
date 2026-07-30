@@ -278,5 +278,4 @@ function LiveMeter() {
   );
 }
 
-export default LiveMeter;/ /   d e p l o y m e n t   t e s t  
- 
+export default LiveMeter;
