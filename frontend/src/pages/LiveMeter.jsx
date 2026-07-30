@@ -237,7 +237,7 @@ function LiveMeter() {
           return (
             <div
               key={r.appliance}
-              className={`bg-white rounded-2xl border p-5 flex items-center justify-between transition-colors duration-700 ${
+              className={`bg-emerald-50/60 rounded-2xl border p-5 flex items-center justify-between transition-colors duration-700 ${
                 r.fault ? "border-red-200 bg-red-50/40" : "border-gray-100"
               } ${flashing ? "ring-2 ring-amber-300" : ""}`}
             >
