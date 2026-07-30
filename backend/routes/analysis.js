@@ -45,6 +45,16 @@ router.get("/", async (req, res) => {
       billCount: bills.length,
     };
 
+    // Default/fallback insights, used whenever the AI call fails for any
+    // reason (rate limit, network error, bad response, etc). The numeric
+    // `stats` above are always real and don't depend on the AI call at all,
+    // so we never want a Gemini failure to take down the whole response.
+    let aiInsights = {
+      summary: "AI insights are temporarily unavailable, but your usage stats are up to date.",
+      alert: null,
+      tips: [],
+    };
+
     const prompt = `
 You are an energy usage analyst. Based on this electricity bill data for a household, write a short analysis.
 
@@ -64,30 +74,43 @@ Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
 }
 `;
 
-    const geminiRes = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
-      { contents: [{ parts: [{ text: prompt }] }] },
-      {
-        headers: {
-          "x-goog-api-key": process.env.GEMINI_API_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    let aiText = geminiRes.data.candidates[0].content.parts[0].text;
-    aiText = aiText.replace(/```json|```/g, "").trim();
-
-    let aiInsights;
     try {
-      aiInsights = JSON.parse(aiText);
-    } catch (parseErr) {
-      aiInsights = { summary: "Analysis generated but formatting was unexpected.", alert: null, tips: [] };
+      const geminiRes = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
+        { contents: [{ parts: [{ text: prompt }] }] },
+        {
+          headers: {
+            "x-goog-api-key": process.env.GEMINI_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      let aiText = geminiRes.data.candidates[0].content.parts[0].text;
+      aiText = aiText.replace(/```json|```/g, "").trim();
+
+      try {
+        aiInsights = JSON.parse(aiText);
+      } catch (parseErr) {
+        console.error("AI response wasn't valid JSON:", aiText);
+        aiInsights = {
+          summary: "Analysis generated but formatting was unexpected.",
+          alert: null,
+          tips: [],
+        };
+      }
+    } catch (aiErr) {
+      // Gemini failed (rate limit, network error, etc). We already have a
+      // safe fallback `aiInsights` set above, so just log it and move on —
+      // the real stats still get returned successfully below.
+      console.error("AI Analysis error (falling back to stats-only):", aiErr.response?.data || aiErr.message);
     }
 
     res.json({ stats, insights: aiInsights });
   } catch (err) {
-    console.error("AI Analysis error:", err.response?.data || err.message);
+    // Only genuine failures (DB errors, etc) reach here now — AI failures
+    // no longer take down the whole endpoint.
+    console.error("Analysis route error:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to generate analysis" });
   }
 });
