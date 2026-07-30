@@ -6,17 +6,21 @@ const HIGHLIGHT_DURATION = 900; // ms, how long a value stays highlighted after 
 
 // Visual identity per appliance: icon, colored badge, and a short subtitle.
 const APPLIANCE_META = {
-  AC: { label: "Air Conditioner", icon: "ac_unit", bg: "bg-blue-100", fg: "text-blue-600" },
-  WaterHeater: { label: "Water Heater", icon: "water_heater", bg: "bg-orange-100", fg: "text-orange-600" },
-  Refrigerator: { label: "Refrigerator", icon: "kitchen", bg: "bg-cyan-100", fg: "text-cyan-600" },
-  WashingMachine: { label: "Washing Machine", icon: "local_laundry_service", bg: "bg-purple-100", fg: "text-purple-600" },
-  TV: { label: "TV", icon: "tv", bg: "bg-indigo-100", fg: "text-indigo-600" },
-  Lights: { label: "Lights", icon: "lightbulb", bg: "bg-yellow-100", fg: "text-yellow-600" },
-  Others: { label: "Other Appliances", icon: "bolt", bg: "bg-green-100", fg: "text-green-600" },
+  AC: { label: "Air Conditioner", icon: "ac_unit" },
+  WaterHeater: { label: "Water Heater", icon: "water_heater" },
+  Refrigerator: { label: "Refrigerator", icon: "kitchen" },
+  WashingMachine: { label: "Washing Machine", icon: "local_laundry_service" },
+  TV: { label: "TV", icon: "tv" },
+  Lights: { label: "Lights", icon: "lightbulb" },
+  Others: { label: "Other Appliances", icon: "bolt" },
 };
 
+// Consistent dark navy blue for every appliance icon box.
+const ICON_BG = "bg-[#1E3A8A]";
+const ICON_FG = "text-white";
+
 function getMeta(name) {
-  return APPLIANCE_META[name] || { label: name, icon: "bolt", bg: "bg-gray-100", fg: "text-gray-600" };
+  return APPLIANCE_META[name] || { label: name, icon: "bolt" };
 }
 
 function AppliancePastReadingsModal({ onClose }) {
@@ -211,7 +215,7 @@ function LiveMeter() {
   if (error) return <p className="text-red-500 p-6">{error}</p>;
 
   return (
-    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 w-full space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Live Smart Meter</h1>
         <p className="text-sm text-gray-500">
@@ -238,8 +242,8 @@ function LiveMeter() {
               } ${flashing ? "ring-2 ring-amber-300" : ""}`}
             >
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${meta.bg}`}>
-                  <span className={`material-symbols-outlined ${meta.fg}`}>{meta.icon}</span>
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${ICON_BG}`}>
+                  <span className={`material-symbols-outlined text-2xl ${ICON_FG}`}>{meta.icon}</span>
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900">{meta.label}</h3>
