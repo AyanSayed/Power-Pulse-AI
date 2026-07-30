@@ -21,4 +21,16 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /api/meter-reading -> fetch recent readings (latest first)
+router.get("/", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    const recent = await MeterReading.find().sort({ receivedAt: -1 }).limit(limit);
+    res.json(recent);
+  } catch (err) {
+    console.error("Meter reading fetch error:", err.message);
+    res.status(500).json({ error: "Failed to fetch readings" });
+  }
+});
+
 module.exports = router;
