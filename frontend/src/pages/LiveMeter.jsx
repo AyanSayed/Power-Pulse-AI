@@ -237,26 +237,33 @@ function LiveMeter() {
           return (
             <div
               key={r.appliance}
-              className={`bg-emerald-100 rounded-2xl border p-5 flex items-center justify-between transition-colors duration-700 ${
+              className={`bg-white rounded-2xl border shadow-sm hover:shadow-md p-6 flex items-center justify-between transition-all duration-300 ${
                 r.fault ? "border-red-200 bg-red-50/40" : "border-gray-100"
               } ${flashing ? "ring-2 ring-amber-300" : ""}`}
             >
-              <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${ICON_BG}`}>
-                  <span className={`material-symbols-outlined text-2xl ${ICON_FG}`}>{meta.icon}</span>
+              <div className="flex items-center gap-5">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${ICON_BG}`}>
+                  <span className={`material-symbols-outlined text-3xl ${ICON_FG}`}>{meta.icon}</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">{meta.label}</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="text-lg font-bold text-gray-900">{meta.label}</h3>
+                  <p className="text-base text-gray-500 mt-0.5">
                     {r.voltage}V &middot; {r.current}A
-                    {r.fault && <span className="ml-2 text-red-600 font-medium">Fault detected</span>}
                   </p>
+                  <span
+                    className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                      r.fault ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
+                    }`}
+                  >
+                    {r.fault ? "Fault detected" : "Running normally"}
+                  </span>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Current Draw</p>
-                <p className={`text-xl font-bold ${r.fault ? "text-red-600" : "text-emerald-600"}`}>
-                  {r.power}W
+                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Current Draw</p>
+                <p className={`text-3xl font-extrabold mt-1 ${r.fault ? "text-red-600" : "text-emerald-600"}`}>
+                  {r.power}
+                  <span className="text-lg font-semibold ml-1">W</span>
                 </p>
               </div>
             </div>
