@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useBill } from "../context/BillContext";
-import { FaSlidersH, FaBoltLightning } from "react-icons/fa6";
+import { FaSliders, FaBoltLightning } from "react-icons/fa6";
 
 // Baseline hours the "current" bill is assumed to reflect for each
 // adjustable appliance — sliders scale cost proportionally against these.
@@ -42,8 +42,8 @@ function SimulatorPage() {
   return (
     <div className="space-y-8">
       <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-500 rounded-3xl p-8 text-white shadow-lg">
-        <h1 className="text-4xl font-bold flex items-center gap-3">
-          <FaSlidersH /> What-If Simulator
+       <h1 className="text-4xl font-bold flex items-center gap-3">
+        <FaSliders /> What-If Simulator
         </h1>
         <p className="mt-3 text-blue-100 max-w-3xl leading-7">
           Drag the sliders to see how changing your daily appliance usage

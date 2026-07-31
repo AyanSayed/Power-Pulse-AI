@@ -13,7 +13,7 @@ const FRIDGE_HEALTHY_BASELINE_PCT = 15; // typical healthy fridge share of total
 const HEATER_HEALTHY_BASELINE_PCT = 22;
 const AC_MISMATCH_TEMP_C = 28; // "mild" weather ceiling for the AC-anomaly rule
 
-export function generateDiagnostics({
+function buildCandidates({
   trendPercent = 0,
   applianceBreakdown = [],
   weatherTemp = null,
@@ -68,18 +68,16 @@ export function generateDiagnostics({
   }
 
   // --- Rule D: Fallback — overall trend spike with no specific culprit found ---
-  if (candidates.length === 0 && trendPercent > 15) {
-    candidates.push({
-      appliance: "Unusual usage",
-      percent: Math.round(trendPercent),
-      cause:
-        "No single appliance stands out yet, but overall consumption is well above your recent average — worth a walkthrough to rule out a device left running.",
-      impactRs: Math.round(billAmount * 0.08),
-    });
-  }
+  return candidates.sort((a, b) => b.impactRs - a.impactRs);
+}
 
-  if (candidates.length === 0) return null;
+// Returns the single highest-impact issue (used by dashboard/overview previews).
+export function generateDiagnostics(params) {
+  const candidates = buildCandidates(params);
+  return candidates.length ? candidates[0] : null;
+}
 
-  // Return the highest-impact issue.
-  return candidates.sort((a, b) => b.impactRs - a.impactRs)[0];
+// Returns every flagged issue, highest impact first (used by the full Alerts page).
+export function generateAllDiagnostics(params) {
+  return buildCandidates(params);
 }
