@@ -9,6 +9,7 @@ import {
 import SummaryCard from "../components/SummaryCard";
 import EnergyScoreRing from "../components/EnergyScoreRing";
 import UsageChart from "../components/UsageChart";
+import RunRateGauge from "../components/RunRateGauge";
 
 import AISummaryPreview from "../components/AISummaryPreview";
 import RecommendationPreview from "../components/RecommendationPreview";
@@ -74,6 +75,10 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
+
+      {/* Energy Budget Run Rate */}
+
+      <RunRateGauge />
 
       {/* Summary Cards */}
 
