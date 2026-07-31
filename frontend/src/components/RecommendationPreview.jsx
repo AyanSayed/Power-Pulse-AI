@@ -1,7 +1,30 @@
 import { Link } from "react-router-dom";
 import { FaLightbulb, FaArrowRight } from "react-icons/fa6";
+import { useBill } from "../context/BillContext";
+import { generateRecommendations } from "../utils/recommendationEngine";
 
 function RecommendationPreview() {
+  const { weatherTemp, latestBill, trendPercent, applianceBreakdown } = useBill();
+
+  const recommendations = generateRecommendations({
+    weatherTemp,
+    latestBill,
+    trendPercent,
+    applianceBreakdown,
+  });
+
+  const top = recommendations[0];
+
+  if (!top) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <p className="text-sm text-gray-500">
+          Upload a bill to unlock personalized recommendations.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <Link
       to="/ai-insights"
@@ -25,11 +48,11 @@ function RecommendationPreview() {
 
       <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
         <h3 className="font-semibold text-gray-900">
-          Increase AC Temperature to 25°C
+          {top.title}
         </h3>
 
         <p className="text-gray-600 mt-2 leading-6">
-          Raising your AC temperature by 1–2°C can significantly reduce electricity usage without affecting comfort.
+          {top.description}
         </p>
       </div>
 
@@ -40,7 +63,7 @@ function RecommendationPreview() {
           </p>
 
           <p className="text-2xl font-bold text-green-600">
-            ₹220/month
+            ₹{top.estimatedSaving}/month
           </p>
         </div>
 
