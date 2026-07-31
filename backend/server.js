@@ -1,5 +1,5 @@
 require("dns").setServers(["8.8.8.8", "8.8.4.4"]);
-
+const extractWithGemini = require("./services/geminiExtractor");
 const weatherRoutes = require("./routes/weather");
 const express = require("express");
 const cors = require("cors");
@@ -96,9 +96,35 @@ app.post("/api/upload", (req, res) => {
             }
 
             // Sanity check: did we actually extract meaningful data?
-            if (!output.bill || !output.units) {
-                return res.status(422).json({ error: "This doesn't look like a valid electricity bill, or key fields couldn't be found." });
-            }
+            // If regex missed any important fields, ask Gemini
+if (false) {
+
+    console.log("Regex incomplete. Trying Gemini...");
+
+    const geminiResult = await extractWithGemini(output.rawText);
+
+    if (geminiResult) {
+
+        output.consumerNumber =
+            output.consumerNumber || geminiResult.consumerNumber;
+
+        output.units =
+            output.units || geminiResult.units;
+
+        output.bill =
+            output.bill || geminiResult.bill;
+
+        output.month =
+            output.month || geminiResult.month;
+    }
+}
+
+// Final validation
+if (!output.bill || !output.units) {
+    return res.status(422).json({
+        error: "This doesn't look like a valid electricity bill."
+    });
+}
 
             res.json(output);
         } catch (err) {
