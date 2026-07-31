@@ -10,7 +10,7 @@ import SummaryCard from "../components/SummaryCard";
 import EnergyScoreRing from "../components/EnergyScoreRing";
 import UsageChart from "../components/UsageChart";
 import RunRateGauge from "../components/RunRateGauge";
-
+import BudgetTracker from "../components/BudgetTracker";
 import AISummaryPreview from "../components/AISummaryPreview";
 import RecommendationPreview from "../components/RecommendationPreview";
 import AlertPreview from "../components/AlertPreview";
@@ -79,7 +79,7 @@ function Dashboard() {
       {/* Energy Budget Run Rate */}
 
       <RunRateGauge />
-
+      <BudgetTracker />
       {/* Summary Cards */}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
