@@ -83,5 +83,8 @@ data = {
     "units": units,
     "bill": bill,
     "month": month_name,
+    # Included so the backend can fall back to AI-based extraction
+    # (Gemini) when regex parsing above doesn't match this bill's layout.
+    "rawText": text,
 }
 print(json.dumps(data))
