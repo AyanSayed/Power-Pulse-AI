@@ -7,6 +7,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Bills from "./pages/Bills";
 import AIInsightsPage from "./pages/AIInsightsPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
+import AlertsPage from "./pages/AlertsPage";
+import BudgetPage from "./pages/BudgetPage";
+import SimulatorPage from "./pages/SimulatorPage";
 import UploadBill from "./pages/UploadBill";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
@@ -50,8 +54,28 @@ function App() {
                   />
 
                   <Route
+                    path="/budget"
+                    element={<BudgetPage />}
+                  />
+
+                  <Route
                     path="/ai-insights"
                     element={<AIInsightsPage />}
+                  />
+
+                  <Route
+                    path="/ai-insights/recommendations"
+                    element={<RecommendationsPage />}
+                  />
+
+                  <Route
+                    path="/ai-insights/alerts"
+                    element={<AlertsPage />}
+                  />
+
+                  <Route
+                    path="/simulator"
+                    element={<SimulatorPage />}
                   />
 
                   <Route

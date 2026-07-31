@@ -8,6 +8,8 @@ import {
   FaTimes,
   FaHistory,
   FaChartLine,
+  FaWallet,
+  FaSlidersH,
 } from "react-icons/fa";
 
 const links = [
@@ -22,9 +24,19 @@ const links = [
     icon: <FaFileInvoiceDollar />,
   },
   {
+    to: "/budget",
+    label: "Budget",
+    icon: <FaWallet />,
+  },
+  {
     to: "/ai-insights",
     label: "AI Insights",
     icon: <FaBrain />,
+  },
+  {
+    to: "/simulator",
+    label: "Simulator",
+    icon: <FaSlidersH />,
   },
   {
     to: "/live-meter",
@@ -51,18 +63,15 @@ function Sidebar({ isOpen, onClose }) {
           <div className="w-10 h-10 rounded-xl bg-amber/10 flex items-center justify-center">
             <FaBolt className="text-amber text-xl bolt-pulse" />
           </div>
-
           <div>
             <h1 className="text-lg font-bold">
               PowerPulse
             </h1>
-
             <p className="text-xs text-slate">
               AI Energy Guardian
             </p>
           </div>
         </div>
-
         <button
           onClick={onClose}
           className="text-gray-300 hover:text-white"
@@ -73,7 +82,6 @@ function Sidebar({ isOpen, onClose }) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-6 space-y-2">
-
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -93,13 +101,11 @@ function Sidebar({ isOpen, onClose }) {
             <span className="text-lg">
               {link.icon}
             </span>
-
             <span>
               {link.label}
             </span>
           </NavLink>
         ))}
-
       </nav>
 
       {/* Footer */}

@@ -80,6 +80,7 @@ function BudgetTracker() {
   const spentSoFar = unitsSoFar * RATE_PER_UNIT;
   const remaining = Math.max(target - spentSoFar, 0);
   const daysLeft = Math.max(daysInMonth - daysElapsed, 0.5);
+  const isLastDay = daysLeft < 1;
 
   const dailyAllowanceRs = remaining / daysLeft;
   const dailyAllowanceUnits = dailyAllowanceRs / RATE_PER_UNIT;

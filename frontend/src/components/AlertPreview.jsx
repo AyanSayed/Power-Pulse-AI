@@ -18,7 +18,7 @@ function AlertPreview() {
 
   return (
     <Link
-      to="/ai-insights"
+      to="/ai-insights/alerts"
       className="block bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300"
     >
       <div className="flex items-center gap-3 mb-5">
