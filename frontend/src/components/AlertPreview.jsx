@@ -4,9 +4,17 @@ import {
   FaArrowRight,
 } from "react-icons/fa6";
 import { useBill } from "../context/BillContext";
+import { generateDiagnostics } from "../utils/diagnosticsEngine";
 
 function AlertPreview() {
-  const { faultAlert } = useBill();
+  const { trendPercent, applianceBreakdown, weatherTemp, latestBill } = useBill();
+
+  const alert = generateDiagnostics({
+    trendPercent,
+    applianceBreakdown,
+    weatherTemp,
+    latestBill,
+  });
 
   return (
     <Link
@@ -17,30 +25,32 @@ function AlertPreview() {
         <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
           <FaTriangleExclamation />
         </div>
-
         <div>
           <h2 className="text-xl font-semibold text-gray-900">
             Active Alert
           </h2>
-
           <p className="text-sm text-gray-500">
             Latest detected issue
           </p>
         </div>
       </div>
-
-      {faultAlert ? (
+      {alert ? (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
           <h3 className="font-semibold text-gray-900">
-            {faultAlert.appliance}
+            {alert.appliance}
+            {alert.appliance !== "Unusual usage" && " health check"}
           </h3>
-
           <p className="text-gray-600 mt-2 leading-6">
-            Electricity usage is{" "}
             <span className="font-semibold text-red-600">
-              {faultAlert.percent}% higher
+              {alert.percent}% higher
             </span>{" "}
-            than normal. This appliance should be checked.
+            than a healthy baseline. {alert.cause}
+          </p>
+          <p className="text-sm text-gray-500 mt-3">
+            Potential monthly impact:{" "}
+            <span className="font-semibold text-red-600">
+              ₹{alert.impactRs}
+            </span>
           </p>
         </div>
       ) : (
@@ -48,13 +58,11 @@ function AlertPreview() {
           <h3 className="font-semibold text-gray-900">
             All Systems Normal
           </h3>
-
           <p className="text-gray-600 mt-2 leading-6">
             No unusual electricity usage has been detected this month.
           </p>
         </div>
       )}
-
       <div className="flex justify-end mt-5 items-center gap-2 text-indigo-600 font-medium">
         View More
         <FaArrowRight />
