@@ -65,16 +65,16 @@ Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
 `;
 
     const geminiRes = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
-      { contents: [{ parts: [{ text: prompt }] }] },
-      {
-        headers: {
-          "x-goog-api-key": process.env.GEMINI_API_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+  {
+    contents: [{ parts: [{ text: prompt }] }],
+  },
+  {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }
+);
     let aiText = geminiRes.data.candidates[0].content.parts[0].text;
     aiText = aiText.replace(/```json|```/g, "").trim();
 

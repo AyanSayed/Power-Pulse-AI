@@ -63,58 +63,58 @@ export function BillProvider({ children }) {
   const latestBill = bills.length ? bills[bills.length - 1] : null;
   const previousBill = bills.length > 1 ? bills[bills.length - 2] : null;
 
-  if (!latestBill) {
-    return (
-      <BillContext.Provider
-        value={{
-          bills: [],
-          hasBill,
-          latestBill: null,
-          previousBill: null,
-          trendPercent: 0,
-          energyScore: 0,
-          predictedBill: 0,
-          aiExplanation: "Upload a bill to get started.",
-          weatherTemp: weather?.temperature ?? null,
-          weatherHumidity: weather?.humidity ?? null,
-          weatherCondition: weather?.weathercode ?? null,
-          carbonKg: 0,
-          applianceBreakdown: [],
-          faultAlert: null,
-          generateExtraction: () => null,
-          confirmBill: async () => {},
-        }}
-      >
-        {children}
-      </BillContext.Provider>
-    );
-  }
+  
 
   // Prefer real backend-computed values (from /api/analysis) when available,
   // fall back to a simple client-side estimate while the AI call is in flight.
-  const trendPercent = aiData?.stats?.percentChange
-    ? Number(aiData.stats.percentChange)
-    : previousBill
-    ? ((latestBill.units - previousBill.units) / previousBill.units) * 100
-    : 0;
+  const trendPercent = latestBill
+  ? (
+      aiData?.stats?.percentChange
+        ? Number(aiData.stats.percentChange)
+        : previousBill
+        ? ((latestBill.units - previousBill.units) / previousBill.units) * 100
+        : 0
+    )
+  : 0;
 
-  const predictedBill = aiData?.stats?.predictedNextBill
-    ? Number(aiData.stats.predictedNextBill)
-    : Math.round(latestBill.bill * (1 + Math.max(trendPercent, 0) / 100 + 0.03));
-
+  const predictedBill = latestBill
+  ? (
+      aiData?.stats?.predictedNextBill
+        ? Number(aiData.stats.predictedNextBill)
+        : Math.round(
+            latestBill.bill *
+              (1 + Math.max(trendPercent, 0) / 100 + 0.03)
+          )
+    )
+  : 0;
   const aiExplanation = aiData?.insights?.summary
     ?? (previousBill
       ? "Loading AI insights..."
       : "Upload a few more bills so I can start comparing month-to-month trends.");
 
   const weatherTemp = weather?.temperature ?? null;
-  const weatherPenalty = weatherTemp && weatherTemp > 30 ? 6 : 0;
-  const trendPenalty = Math.max(trendPercent, 0) * 1.4;
-  const energyScore = Math.max(0, Math.min(100, Math.round(100 - trendPenalty - weatherPenalty)));
+
+const weatherPenalty =
+  weatherTemp && weatherTemp > 30 ? 6 : 0;
+
+const trendPenalty =
+  latestBill ? Math.max(trendPercent, 0) * 1.4 : 0;
+
+const energyScore = latestBill
+  ? Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(100 - trendPenalty - weatherPenalty)
+      )
+    )
+  : 0;
 
   // No smart-meter/appliance-level backend yet — these stay simulated.
   const EMISSION_FACTOR = 0.82;
-  const carbonKg = Math.round(latestBill.units * EMISSION_FACTOR);
+  const carbonKg = latestBill
+  ? Math.round(latestBill.units * EMISSION_FACTOR)
+  : 0;
 
   const applianceBreakdown = [
     { name: "AC Unit", pct: 42, color: "coral" },
@@ -130,7 +130,10 @@ export function BillProvider({ children }) {
     : null;
 
   function generateExtraction() {
-    const nextMonthIndex = (MONTHS.indexOf(latestBill.month) + 1) % 12;
+  if (!latestBill) return null;
+
+  const nextMonthIndex =
+    (MONTHS.indexOf(latestBill.month) + 1) % 12;
     const variance = 0.9 + Math.random() * 0.3;
     const units = Math.round(latestBill.units * variance);
     const bill = Math.round(units * 8.2);
@@ -143,27 +146,31 @@ export function BillProvider({ children }) {
   }
 
   async function confirmBill(extracted) {
-    try {
-      const status = extracted.units > latestBill.units * 1.08 ? "High" : "Normal";
+  try {
+    const status = latestBill
+      ? extracted.units > latestBill.units * 1.08
+        ? "High"
+        : "Normal"
+      : "Normal";
 
-      await axios.post(`${API_URL}/api/bills`, {
-        user: latestBill.user,
-        month: extracted.month,
-        units: extracted.units,
-        bill: extracted.bill,
-        status,
-        consumerNumber: extracted.consumerNumber,
-      });
+    await axios.post(`${API_URL}/api/bills`, {
+      user: latestBill?.user,
+      month: extracted.month,
+      units: extracted.units,
+      bill: extracted.bill,
+      status,
+      consumerNumber: extracted.consumerNumber,
+    });
 
-      const res = await axios.get(`${API_URL}/api/bills`);
-      setBills(res.data);
+    const res = await axios.get(`${API_URL}/api/bills`);
+    setBills(res.data);
 
-      localStorage.setItem("pp_has_bill", "true");
-      setHasBill(true);
-    } catch (err) {
-      console.error(err);
-    }
+    localStorage.setItem("pp_has_bill", "true");
+    setHasBill(true);
+  } catch (err) {
+    console.error(err);
   }
+}
 
   return (
     <BillContext.Provider

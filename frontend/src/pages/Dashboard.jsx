@@ -81,14 +81,14 @@ function Dashboard() {
 
         <SummaryCard
           title="Current Bill"
-          value={<CountUp end={latestBill.bill} prefix="₹" />}
+          value={<CountUp end={latestBill?.bill ?? 0} prefix="₹" />}
           icon={<FaMoneyBillWave />}
           accent="amber"
         />
 
         <SummaryCard
           title="Units Consumed"
-          value={<CountUp end={latestBill.units} suffix=" kWh" />}
+          value={<CountUp end={latestBill?.units ?? 0} suffix=" kWh" />}
           icon={<FaBolt />}
           accent="navy"
         />
