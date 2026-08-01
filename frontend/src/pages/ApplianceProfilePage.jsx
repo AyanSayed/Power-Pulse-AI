@@ -61,7 +61,7 @@ function ApplianceProfilePage() {
         </p>
       </div>
 
-      <DataTierBadge tierInfo={tierInfo} />
+      <DataTierBadge tierInfo={tierInfo} hideCta />
 
       <form onSubmit={handleSave} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
         <div>

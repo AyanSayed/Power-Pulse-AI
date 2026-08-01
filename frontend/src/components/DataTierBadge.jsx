@@ -8,7 +8,7 @@ const TIER_STYLES = {
 };
 
 // tierInfo comes from useBill() -> { tier, name, short, desc }
-function DataTierBadge({ tierInfo, compact = false }) {
+function DataTierBadge({ tierInfo, compact = false, hideCta = false }) {
   const tier = tierInfo?.tier ?? 1;
   const style = TIER_STYLES[tier] || TIER_STYLES[1];
 
@@ -48,7 +48,7 @@ function DataTierBadge({ tierInfo, compact = false }) {
           </div>
         </div>
 
-        {tier < 3 && (
+        {!hideCta && tier < 3 && (
           <Link
             to="/profile/appliance-profile"
             className="flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 whitespace-nowrap"
@@ -57,7 +57,7 @@ function DataTierBadge({ tierInfo, compact = false }) {
             <FaArrowRight size={12} />
           </Link>
         )}
-        {tier === 3 && (
+        {!hideCta && tier === 3 && (
           <span className="flex items-center gap-2 text-sm font-semibold text-emerald-600 whitespace-nowrap">
             <FaCheckCircle /> Sensors connected
           </span>
