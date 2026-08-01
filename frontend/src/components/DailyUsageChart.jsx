@@ -6,6 +6,16 @@ const DAY_LABELS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SAT
 // once that feed exists.
 const MULTIPLIERS = [0.9, 0.95, 0.85, 1.05, 1.0, 1.25, 0.95];
 
+// Shared with DailyUsagePage so the stat cards up top and the chart below
+// are always built from the exact same numbers.
+export function buildDailyUsageData(latestUnits = 0) {
+  const base = latestUnits / 7;
+  return DAY_LABELS.map((day, i) => ({
+    day,
+    units: Math.round(base * MULTIPLIERS[i]),
+  }));
+}
+
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
 
@@ -21,11 +31,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 function DailyUsageChart({ latestUnits = 0 }) {
-  const base = latestUnits / 7;
-  const data = DAY_LABELS.map((day, i) => ({
-    day,
-    units: Math.round(base * MULTIPLIERS[i]),
-  }));
+  const data = buildDailyUsageData(latestUnits);
   const peakIndex = data.reduce((maxIdx, d, i, arr) => (d.units > arr[maxIdx].units ? i : maxIdx), 0);
 
   return (
