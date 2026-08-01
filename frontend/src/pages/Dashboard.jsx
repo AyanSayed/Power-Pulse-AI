@@ -8,9 +8,10 @@ import {
 
 import SummaryCard from "../components/SummaryCard";
 import EnergyScoreRing from "../components/EnergyScoreRing";
-import UsageChart from "../components/UsageChart";
 import RunRateGauge from "../components/RunRateGauge";
-import BudgetTracker from "../components/BudgetTracker";
+import DashboardHero from "../components/DashboardHero";
+import BudgetMiniCard from "../components/BudgetMiniCard";
+import UsageMiniChart from "../components/UsageMiniChart";
 import AISummaryPreview from "../components/AISummaryPreview";
 import RecommendationPreview from "../components/RecommendationPreview";
 import AlertPreview from "../components/AlertPreview";
@@ -41,6 +42,7 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-8">
+        <SkeletonBlock height="h-56" />
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <SkeletonCard />
@@ -49,14 +51,11 @@ function Dashboard() {
           <SkeletonCard />
         </div>
 
-        <SkeletonBlock height="h-72" />
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <SkeletonBlock height="h-60" />
           <SkeletonBlock height="h-60" />
           <SkeletonBlock height="h-60" />
         </div>
-
       </div>
     );
   }
@@ -76,14 +75,14 @@ function Dashboard() {
   return (
     <div className="space-y-8">
 
-      {/* Energy Budget Run Rate */}
+      {/* Hero */}
+      <DashboardHero trendPercent={trendPercent} />
 
+      {/* Live Run Rate */}
       <RunRateGauge />
-      <BudgetTracker />
+
       {/* Summary Cards */}
-
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-
         <SummaryCard
           title="Current Bill"
           value={<CountUp end={latestBill.bill} prefix="₹" />}
@@ -112,23 +111,19 @@ function Dashboard() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex items-center justify-center">
           <EnergyScoreRing score={energyScore} />
         </div>
-
       </div>
 
-      {/* Monthly Usage */}
+      {/* Budget + Usage teasers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <BudgetMiniCard />
+        <UsageMiniChart data={bills} />
+      </div>
 
-      <UsageChart data={bills} />
-
-      {/* Dashboard Preview Cards */}
-
+      {/* AI Preview Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         <AISummaryPreview />
-
         <RecommendationPreview />
-
         <AlertPreview />
-
       </div>
 
     </div>

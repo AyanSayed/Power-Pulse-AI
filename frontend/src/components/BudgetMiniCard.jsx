@@ -1,0 +1,100 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { FaWallet, FaArrowRight } from "react-icons/fa";
+
+const API_URL = import.meta.env.VITE_API_URL;
+const RATE_PER_UNIT = 8.2;
+const BUDGET_KEY = "pp_budget_target";
+const DEFAULT_TARGET = 3000;
+
+function BudgetMiniCard() {
+  const [target] = useState(() => {
+    const saved = localStorage.getItem(BUDGET_KEY);
+    return saved ? Number(saved) : DEFAULT_TARGET;
+  });
+  const [runRate, setRunRate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchRunRate() {
+      try {
+        const res = await axios.get(`${API_URL}/api/meter-reading/run-rate`);
+        if (!cancelled) {
+          setRunRate(res.data);
+          setError(false);
+        }
+      } catch (err) {
+        console.error("Budget mini card fetch error:", err.message);
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchRunRate();
+    const interval = setInterval(fetchRunRate, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 animate-pulse">
+        <div className="h-4 w-32 bg-gray-200 rounded mb-4" />
+        <div className="h-3 w-full bg-gray-200 rounded" />
+      </div>
+    );
+  }
+
+  if (error || !runRate) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <p className="text-sm text-gray-500">Budget data unavailable right now.</p>
+      </div>
+    );
+  }
+
+  const spentSoFar = runRate.unitsSoFar * RATE_PER_UNIT;
+  const percent = Math.min((spentSoFar / target) * 100, 100);
+  const isOverBudget = spentSoFar > target;
+
+  return (
+    <Link
+      to="/budget"
+      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 block"
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <span className="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center">
+          <FaWallet />
+        </span>
+        <h3 className="text-lg font-semibold text-gray-900">Budget</h3>
+      </div>
+
+      <p className="text-sm text-gray-500 mb-2">
+        <span className={`font-semibold ${isOverBudget ? "text-red-600" : "text-gray-700"}`}>
+          ₹{Math.round(spentSoFar)}
+        </span>{" "}
+        of ₹{target} spent this month
+      </p>
+
+      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-4">
+        <div
+          className={`h-full rounded-full ${isOverBudget ? "bg-red-500" : "bg-teal-500"}`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+
+      <div className="flex items-center gap-2 text-teal-600 font-medium text-sm">
+        Manage budget <FaArrowRight size={12} />
+      </div>
+    </Link>
+  );
+}
+
+export default BudgetMiniCard;
