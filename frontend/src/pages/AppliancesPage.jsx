@@ -1,8 +1,9 @@
 import { useBill } from "../context/BillContext";
 import ApplianceBreakdown from "../components/ApplianceBreakdown";
+import DataTierBadge from "../components/DataTierBadge";
 
 function AppliancesPage() {
-  const { applianceBreakdown } = useBill();
+  const { applianceBreakdown, tierInfo } = useBill();
 
   return (
     <div className="space-y-8">
@@ -12,6 +13,8 @@ function AppliancesPage() {
           See exactly where your electricity is going, appliance by appliance.
         </p>
       </div>
+
+      <DataTierBadge tierInfo={tierInfo} />
 
       <ApplianceBreakdown data={applianceBreakdown} />
     </div>

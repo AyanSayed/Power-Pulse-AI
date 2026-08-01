@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaBolt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { savePincode } from "../utils/applianceProfileStorage";
 
 function Signup() {
   const navigate = useNavigate();
@@ -10,11 +11,15 @@ function Signup() {
   const { showToast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [pincode, setPincodeInput] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // TODO: replace with real API call once backend auth is ready
     login({ name: name || "Ayan Sharma", email });
+    // Tier 1 onboarding hook: bill upload (later) + pincode (now), so we can
+    // pull local weather immediately without waiting on an appliance checklist.
+    if (pincode.trim()) savePincode(pincode.trim());
     showToast("Account created successfully", "success");
     navigate("/");
   };
@@ -53,6 +58,20 @@ function Signup() {
               placeholder="you@example.com"
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 outline-none focus:border-amber text-sm"
             />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-ink block mb-1.5">Pincode</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={pincode}
+              onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
+              placeholder="e.g. 400614"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 outline-none focus:border-amber text-sm"
+            />
+            <p className="text-xs text-slate mt-1">Used to fetch local weather for accurate predictions.</p>
           </div>
 
           <div>

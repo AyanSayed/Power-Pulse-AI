@@ -66,6 +66,7 @@ const navSections = [
     children: [
       { to: "/profile", label: "Overview", icon: <FaUser />, end: true },
       { to: "/profile/home-details", label: "Home Details", icon: <FaIdCard /> },
+      { to: "/profile/appliance-profile", label: "Appliance Profile", icon: <FaPlug /> },
       { to: "/profile/achievements", label: "Achievements", icon: <FaTrophy /> },
     ],
   },

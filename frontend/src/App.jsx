@@ -23,6 +23,7 @@ import UploadBill from "./pages/UploadBill";
 import Profile from "./pages/Profile";
 import ProfileHomeDetailsPage from "./pages/ProfileHomeDetailsPage";
 import ProfileAchievementsPage from "./pages/ProfileAchievementsPage";
+import ApplianceProfilePage from "./pages/ApplianceProfilePage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -71,6 +72,7 @@ function App() {
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/home-details" element={<ProfileHomeDetailsPage />} />
                   <Route path="/profile/achievements" element={<ProfileAchievementsPage />} />
+                  <Route path="/profile/appliance-profile" element={<ApplianceProfilePage />} />
 
                   <Route path="/live-meter" element={<LiveMeter />} />
 

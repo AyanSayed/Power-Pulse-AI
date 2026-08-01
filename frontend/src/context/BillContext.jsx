@@ -1,6 +1,20 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { estimateApplianceBreakdown, getDataTier, getTierInfo } from "../utils/nilmEngine";
+import {
+  loadApplianceProfile,
+  saveApplianceProfile as persistApplianceProfile,
+  loadPincode,
+  savePincode as persistPincode,
+  isApplianceProfileMeaningful,
+} from "../utils/applianceProfileStorage";
+
 const BillContext = createContext(null);
+
+// A live sensor reading only counts as "Tier 3" if it's recent — a device
+// that hasn't reported in a while shouldn't silently keep claiming the
+// highest, most-trusted tier.
+const LIVE_SENSOR_FRESHNESS_MS = 30 * 60 * 1000; // 30 minutes
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -16,6 +30,36 @@ export function BillProvider({ children }) {
 
   const [weather, setWeather] = useState(null); // { temperature, humidity, windspeed, weathercode }
   const [aiData, setAiData] = useState(null);    // { stats, insights } from /api/analysis
+
+  // --- Three-Tier Data Pyramid state ---
+  const [applianceProfile, setApplianceProfileState] = useState(() => loadApplianceProfile());
+  const [pincode, setPincodeState] = useState(() => loadPincode());
+  const [latestMeterDoc, setLatestMeterDoc] = useState(null); // most recent /api/meter-reading doc, if any
+
+  // Fetch the most recent live sensor reading once, to detect Tier 3 eligibility.
+  useEffect(() => {
+    const fetchLatestReading = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/meter-reading?limit=1`);
+        const docs = Array.isArray(res.data) ? res.data : [];
+        setLatestMeterDoc(docs[0] || null);
+      } catch (err) {
+        // No sensors connected yet — perfectly normal, just stay on Tier 1/2.
+        setLatestMeterDoc(null);
+      }
+    };
+    fetchLatestReading();
+  }, []);
+
+  function setApplianceProfile(profile) {
+    persistApplianceProfile(profile);
+    setApplianceProfileState(profile);
+  }
+
+  function setPincode(value) {
+    persistPincode(value);
+    setPincodeState(value);
+  }
 
   // Fetch bills on load
   useEffect(() => {
@@ -64,6 +108,14 @@ export function BillProvider({ children }) {
   // no matter how many times bills are added or deleted.
   const hasBill = !!latestBill;
 
+  // --- Three-Tier Data Pyramid: tier detection (available even with no bill yet) ---
+  const hasApplianceProfile = isApplianceProfileMeaningful(applianceProfile);
+  const hasLiveSensorData =
+    !!latestMeterDoc?.receivedAt &&
+    Date.now() - new Date(latestMeterDoc.receivedAt).getTime() < LIVE_SENSOR_FRESHNESS_MS;
+  const dataTier = getDataTier({ hasApplianceProfile, hasLiveSensorData });
+  const tierInfo = getTierInfo(dataTier);
+
   if (!latestBill) {
     return (
       <BillContext.Provider
@@ -84,6 +136,12 @@ export function BillProvider({ children }) {
           faultAlert: null,
           generateExtraction: () => null,
           confirmBill: async () => {},
+          dataTier,
+          tierInfo,
+          applianceProfile,
+          setApplianceProfile,
+          pincode,
+          setPincode,
         }}
       >
         {children}
@@ -113,16 +171,18 @@ export function BillProvider({ children }) {
   const trendPenalty = Math.max(trendPercent, 0) * 1.4;
   const energyScore = Math.max(0, Math.min(100, Math.round(100 - trendPenalty - weatherPenalty)));
 
-  // No smart-meter/appliance-level backend yet — these stay simulated.
   const EMISSION_FACTOR = 0.82;
   const carbonKg = Math.round(latestBill.units * EMISSION_FACTOR);
 
-  const applianceBreakdown = [
-    { name: "AC Unit", pct: 42, color: "coral" },
-    { name: "Water Heater", pct: 24, color: "amber" },
-    { name: "Refrigerator", pct: 15, color: "teal" },
-    { name: "Other Appliances", pct: 19, color: "navy" },
-  ];
+  // Three-Tier Data Pyramid: Tier 3 uses real sensor readings, Tier 2 infers
+  // the split via NILM/Virtual Sub-Metering from the appliance checklist +
+  // weather, Tier 1 falls back to a generic weather-nudged estimate.
+  const applianceBreakdown = estimateApplianceBreakdown({
+    tier: dataTier,
+    applianceProfile,
+    weatherTemp,
+    latestReadings: latestMeterDoc?.readings,
+  });
 
   const faultAlert = aiData?.insights?.alert
     ? { appliance: "Unusual usage", percent: Math.round(Math.abs(trendPercent)) }
@@ -183,6 +243,12 @@ export function BillProvider({ children }) {
         faultAlert,
         generateExtraction,
         confirmBill,
+        dataTier,
+        tierInfo,
+        applianceProfile,
+        setApplianceProfile,
+        pincode,
+        setPincode,
       }}
     >
       {children}
