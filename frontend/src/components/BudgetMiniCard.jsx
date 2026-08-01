@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
-import { FaWallet, FaArrowRight } from "react-icons/fa";
+import { FaWallet } from "react-icons/fa";
+import ViewMoreButton from "./ViewMoreButton";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const RATE_PER_UNIT = 8.2;
