@@ -19,35 +19,72 @@ import {
   FaCloud,
   FaLeaf,
   FaChartArea,
+  FaCloudUploadAlt,
+  FaChartBar,
+  FaIdCard,
+  FaTrophy,
 } from "react-icons/fa";
 
-const topLinks = [
-  { to: "/", label: "Dashboard", icon: <FaHome /> },
-  { to: "/bills", label: "Bills", icon: <FaFileInvoiceDollar /> },
+const navSections = [
+  { to: "/", label: "Dashboard", icon: <FaHome />, end: true },
+  {
+    key: "bills",
+    label: "Bills",
+    icon: <FaFileInvoiceDollar />,
+    base: "/bills",
+    children: [
+      { to: "/bills", label: "Overview", icon: <FaFileInvoiceDollar />, end: true },
+      { to: "/bills/upload", label: "Upload Bill", icon: <FaCloudUploadAlt /> },
+      { to: "/bills/daily-usage", label: "Daily Usage", icon: <FaChartBar /> },
+      { to: "/bills/history", label: "Bill History", icon: <FaHistory /> },
+    ],
+  },
   { to: "/budget", label: "Budget", icon: <FaWallet /> },
-];
-
-const aiInsightsChildren = [
-  { to: "/ai-insights", label: "Overview", icon: <FaBrain />, end: true },
-  { to: "/ai-insights/analysis", label: "AI Analysis", icon: <FaBrain /> },
-  { to: "/ai-insights/recommendations", label: "Recommendations", icon: <FaLightbulb /> },
-  { to: "/ai-insights/alerts", label: "Alerts", icon: <FaExclamationTriangle /> },
-  { to: "/ai-insights/appliances", label: "Appliances", icon: <FaPlug /> },
-  { to: "/ai-insights/weather", label: "Weather", icon: <FaCloud /> },
-  { to: "/ai-insights/carbon", label: "Carbon Footprint", icon: <FaLeaf /> },
-  { to: "/ai-insights/usage-trends", label: "Usage Trends", icon: <FaChartArea /> },
-];
-
-const bottomLinks = [
+  {
+    key: "ai-insights",
+    label: "AI Insights",
+    icon: <FaBrain />,
+    base: "/ai-insights",
+    children: [
+      { to: "/ai-insights", label: "Overview", icon: <FaBrain />, end: true },
+      { to: "/ai-insights/analysis", label: "AI Analysis", icon: <FaBrain /> },
+      { to: "/ai-insights/recommendations", label: "Recommendations", icon: <FaLightbulb /> },
+      { to: "/ai-insights/alerts", label: "Alerts", icon: <FaExclamationTriangle /> },
+      { to: "/ai-insights/appliances", label: "Appliances", icon: <FaPlug /> },
+      { to: "/ai-insights/weather", label: "Weather", icon: <FaCloud /> },
+      { to: "/ai-insights/carbon", label: "Carbon Footprint", icon: <FaLeaf /> },
+      { to: "/ai-insights/usage-trends", label: "Usage Trends", icon: <FaChartArea /> },
+    ],
+  },
   { to: "/simulator", label: "Simulator", icon: <FaSlidersH /> },
   { to: "/live-meter", label: "Live Meter", icon: <FaChartLine /> },
-  { to: "/profile", label: "Profile", icon: <FaUser /> },
+  {
+    key: "profile",
+    label: "Profile",
+    icon: <FaUser />,
+    base: "/profile",
+    children: [
+      { to: "/profile", label: "Overview", icon: <FaUser />, end: true },
+      { to: "/profile/home-details", label: "Home Details", icon: <FaIdCard /> },
+      { to: "/profile/achievements", label: "Achievements", icon: <FaTrophy /> },
+    ],
+  },
 ];
 
 function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
-  const isOnAiInsights = location.pathname.startsWith("/ai-insights");
-  const [aiOpen, setAiOpen] = useState(isOnAiInsights);
+
+  const [openGroups, setOpenGroups] = useState(() => {
+    const initial = {};
+    navSections.forEach((s) => {
+      if (s.children) initial[s.key] = location.pathname.startsWith(s.base);
+    });
+    return initial;
+  });
+
+  function toggleGroup(key) {
+    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   function handleChildClick() {
     if (window.innerWidth < 768) onClose();
@@ -85,70 +122,69 @@ function Sidebar({ isOpen, onClose }) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-6 space-y-2">
-        {topLinks.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={link.to === "/"}
-            onClick={handleChildClick}
-            className={linkClass}
-          >
-            <span className="text-lg">{link.icon}</span>
-            <span>{link.label}</span>
-          </NavLink>
-        ))}
+        {navSections.map((section) => {
+          if (!section.children) {
+            return (
+              <NavLink
+                key={section.to}
+                to={section.to}
+                end={section.end}
+                onClick={handleChildClick}
+                className={linkClass}
+              >
+                <span className="text-lg">{section.icon}</span>
+                <span>{section.label}</span>
+              </NavLink>
+            );
+          }
 
-        {/* AI Insights — expandable */}
-        <div>
-          <button
-            onClick={() => setAiOpen((v) => !v)}
-            className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-              isOnAiInsights
-                ? "bg-navy-light text-white font-semibold"
-                : "text-gray-300 hover:bg-navy-light hover:text-white"
-            }`}
-          >
-            <span className="flex items-center gap-3">
-              <span className="text-lg">
-                <FaBrain />
-              </span>
-              <span>AI Insights</span>
-            </span>
-            <span className="text-sm">
-              {aiOpen ? <FaAngleDown /> : <FaAngleRight />}
-            </span>
-          </button>
+          const isOnSection = location.pathname.startsWith(section.base);
+          const isOpen = !!openGroups[section.key];
 
-          {aiOpen && (
-            <div className="mt-1 ml-4 pl-3 border-l border-navy-border space-y-1">
-              {aiInsightsChildren.map((child) => (
-                <NavLink
-                  key={child.to}
-                  to={child.to}
-                  end={child.end}
-                  onClick={handleChildClick}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                      isActive
-                        ? "bg-amber text-navy font-semibold"
-                        : "text-gray-400 hover:bg-navy-light hover:text-white"
-                    }`
-                  }
-                >
-                  <span className="text-sm">{child.icon}</span>
-                  <span>{child.label}</span>
-                </NavLink>
-              ))}
+          return (
+            <div key={section.key}>
+              <button
+                onClick={() => toggleGroup(section.key)}
+                className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  isOnSection
+                    ? "bg-navy-light text-white font-semibold"
+                    : "text-gray-300 hover:bg-navy-light hover:text-white"
+                }`}
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-lg">{section.icon}</span>
+                  <span>{section.label}</span>
+                </span>
+                <span className="text-sm">
+                  {isOpen ? <FaAngleDown /> : <FaAngleRight />}
+                </span>
+              </button>
+
+              {isOpen && (
+                <div className="mt-1 ml-4 pl-3 border-l border-navy-border space-y-1">
+                  {section.children.map((child) => (
+                    <NavLink
+                      key={child.to}
+                      to={child.to}
+                      end={child.end}
+                      onClick={handleChildClick}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                          isActive
+                            ? "bg-amber text-navy font-semibold"
+                            : "text-gray-400 hover:bg-navy-light hover:text-white"
+                        }`
+                      }
+                    >
+                      <span className="text-sm">{child.icon}</span>
+                      <span>{child.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-
-        {bottomLinks.map((link) => (
-          <NavLink key={link.to} to={link.to} onClick={handleChildClick} className={linkClass}>
-            <span className="text-lg">{link.icon}</span>
-            <span>{link.label}</span>
-          </NavLink>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Footer */}
