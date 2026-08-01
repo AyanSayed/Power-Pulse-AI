@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import {
   FaBrain,
   FaLightbulb,
@@ -7,8 +6,8 @@ import {
   FaCloud,
   FaLeaf,
   FaChartArea,
-  FaArrowRight,
 } from "react-icons/fa";
+import QuickLinkCard from "../components/QuickLinkCard";
 
 const sections = [
   {
@@ -16,49 +15,56 @@ const sections = [
     title: "AI Analysis",
     desc: "Trend, prediction, and what the AI is seeing this month",
     icon: <FaBrain />,
-    color: "bg-indigo-100 text-indigo-600",
+    iconBg: "bg-indigo-100 text-indigo-600",
+    accent: "indigo",
   },
   {
     to: "/ai-insights/recommendations",
     title: "Recommendations",
     desc: "Personalized tips to lower your bill",
     icon: <FaLightbulb />,
-    color: "bg-yellow-100 text-yellow-600",
+    iconBg: "bg-yellow-100 text-yellow-600",
+    accent: "amber",
   },
   {
     to: "/ai-insights/alerts",
     title: "Alerts & Diagnostics",
     desc: "Appliance issues flagged by the diagnostics engine",
     icon: <FaExclamationTriangle />,
-    color: "bg-red-100 text-red-600",
+    iconBg: "bg-red-100 text-red-600",
+    accent: "red",
   },
   {
     to: "/ai-insights/appliances",
     title: "Appliance Breakdown",
     desc: "Where your electricity is actually going",
     icon: <FaPlug />,
-    color: "bg-purple-100 text-purple-600",
+    iconBg: "bg-purple-100 text-purple-600",
+    accent: "purple",
   },
   {
     to: "/ai-insights/weather",
     title: "Weather Impact",
     desc: "How local weather is affecting your usage",
     icon: <FaCloud />,
-    color: "bg-sky-100 text-sky-600",
+    iconBg: "bg-sky-100 text-sky-600",
+    accent: "sky",
   },
   {
     to: "/ai-insights/carbon",
     title: "Carbon Footprint",
     desc: "Your estimated CO₂ emissions this month",
     icon: <FaLeaf />,
-    color: "bg-green-100 text-green-600",
+    iconBg: "bg-green-100 text-green-600",
+    accent: "green",
   },
   {
     to: "/ai-insights/usage-trends",
     title: "Usage Trends",
     desc: "Your monthly consumption over time",
     icon: <FaChartArea />,
-    color: "bg-orange-100 text-orange-600",
+    iconBg: "bg-orange-100 text-orange-600",
+    accent: "orange",
   },
 ];
 
@@ -74,24 +80,7 @@ function AIInsightsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {sections.map((s) => (
-          <Link
-            key={s.to}
-            to={s.to}
-            className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-          >
-            <div>
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4 ${s.color}`}
-              >
-                {s.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">{s.title}</h3>
-              <p className="text-sm text-gray-500 mt-1">{s.desc}</p>
-            </div>
-            <div className="flex items-center gap-2 text-indigo-600 font-medium mt-4">
-              Open <FaArrowRight />
-            </div>
-          </Link>
+          <QuickLinkCard key={s.to} {...s} buttonLabel="Open" />
         ))}
       </div>
     </div>

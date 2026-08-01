@@ -65,10 +65,7 @@ function BudgetMiniCard() {
   const isOverBudget = spentSoFar > target;
 
   return (
-    <Link
-      to="/budget"
-      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 block"
-    >
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-lg transition-all duration-300">
       <div className="flex items-center gap-2 mb-4">
         <span className="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center">
           <FaWallet />
@@ -83,17 +80,15 @@ function BudgetMiniCard() {
         of ₹{target} spent this month
       </p>
 
-      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-4">
+      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${isOverBudget ? "bg-red-500" : "bg-teal-500"}`}
           style={{ width: `${percent}%` }}
         />
       </div>
 
-      <div className="flex items-center gap-2 text-teal-600 font-medium text-sm">
-        Manage budget <FaArrowRight size={12} />
-      </div>
-    </Link>
+      <ViewMoreButton to="/budget" label="Manage Budget" accent="teal" />
+    </div>
   );
 }
 

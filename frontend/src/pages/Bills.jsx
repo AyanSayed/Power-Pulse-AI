@@ -97,27 +97,10 @@ function Bills() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {sections.map((s) => (
-          <Link
-            key={s.to}
-            to={s.to}
-            className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-          >
-            <div>
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4 ${s.color}`}
-              >
-                {s.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">{s.title}</h3>
-              <p className="text-sm text-gray-500 mt-1">{s.desc}</p>
-            </div>
-            <div className="flex items-center gap-2 text-indigo-600 font-medium mt-4">
-              Open <FaArrowRight />
-            </div>
-          </Link>
-        ))}
-      </div>
+  {sections.map((s) => (
+    <QuickLinkCard key={s.to} {...s} />
+  ))}
+</div>
     </div>
   );
 }
