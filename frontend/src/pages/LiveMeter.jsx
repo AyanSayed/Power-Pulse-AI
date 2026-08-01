@@ -132,6 +132,15 @@ function LiveMeter() {
   const [flash, setFlash] = useState({});
   const prevReadingsRef = useRef({});
 
+  // Ticks every second purely to re-render the "updated Xs ago" freshness label —
+  // without this, that label would only update when a new reading arrives, which
+  // is exactly the ambiguity we're trying to remove (is it live, or just stuck?).
+  const [nowTick, setNowTick] = useState(Date.now());
+  useEffect(() => {
+    const tick = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -183,7 +192,7 @@ function LiveMeter() {
     };
 
     fetchLatest();
-    const interval = setInterval(fetchLatest, 5000);
+    const interval = setInterval(fetchLatest, 3000);
     return () => {
       isMounted = false;
       clearInterval(interval);
@@ -218,11 +227,20 @@ function LiveMeter() {
     <div className="p-6 md:p-8 w-full space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Live Smart Meter</h1>
-        <p className="text-sm text-gray-500">
-          Auto-refreshes every 5 seconds
-          {lastUpdated && (
-            <span> &middot; Last update: {new Date(lastUpdated).toLocaleTimeString()}</span>
-          )}
+        <p className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
+          <span>Polling every 3 seconds</span>
+          {lastUpdated && (() => {
+            const secondsAgo = Math.max(0, Math.round((nowTick - new Date(lastUpdated).getTime()) / 1000));
+            const isStale = secondsAgo > 20;
+            return (
+              <span className={`inline-flex items-center gap-1.5 font-medium ${isStale ? "text-amber-600" : "text-emerald-600"}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isStale ? "bg-amber-500" : "bg-emerald-500 animate-pulse"}`} />
+                {isStale
+                  ? `No new data in ${secondsAgo}s — check the simulator/backend`
+                  : `Updated ${secondsAgo}s ago`}
+              </span>
+            );
+          })()}
         </p>
       </div>
 
