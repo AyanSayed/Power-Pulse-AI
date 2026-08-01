@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useBill } from "../context/BillContext";
+import QuickLinkCard from "../components/QuickLinkCard";
 import {
   FaCalendarAlt,
   FaBolt,
