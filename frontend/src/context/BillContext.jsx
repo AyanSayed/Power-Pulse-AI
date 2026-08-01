@@ -37,6 +37,10 @@ export function BillProvider({ children }) {
   const [latestMeterDoc, setLatestMeterDoc] = useState(null); // most recent /api/meter-reading doc, if any
 
   // Fetch the most recent live sensor reading once, to detect Tier 3 eligibility.
+  // Poll for the most recent live sensor reading, to detect Tier 3 eligibility.
+  // A one-time fetch on mount isn't enough — the smart meter can come online
+  // (or drop off) at any point during a session, so we re-check periodically
+  // the same way LiveMeter.jsx polls for live readings.
   useEffect(() => {
     const fetchLatestReading = async () => {
       try {
@@ -49,6 +53,8 @@ export function BillProvider({ children }) {
       }
     };
     fetchLatestReading();
+    const interval = setInterval(fetchLatestReading, 15000); // re-check every 15s
+    return () => clearInterval(interval);
   }, []);
 
   function setApplianceProfile(profile) {
