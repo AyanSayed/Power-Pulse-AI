@@ -7,8 +7,6 @@ const dotenv = require("dotenv");
 const axios = require("axios");
 const connectDB = require("./config/db");
 const billRoutes = require("./routes/billRoutes");
-const { PythonShell } = require("python-shell");
-const path = require("path");
 const multer = require("multer");
 
 // Load environment variables
@@ -59,10 +57,15 @@ app.get("/", (req, res) => {
 // to Gemini and asks it to find the same fields regex was looking for.
 // This keeps the fast/free regex path as the default, and only pays for
 // an AI call on unfamiliar bill formats.
-async function extractBillDataWithAI(rawText) {
+const fs = require("fs");
+
+async function extractBillDataFromFile(filePath, mimeType) {
+    const fileBuffer = fs.readFileSync(filePath);
+    const base64Data = fileBuffer.toString("base64");
+
     const prompt = `
 You are an expert at reading electricity/utility bills from any country, provider, or template format.
-Extract the following fields from the raw bill text below.
+Look carefully at the attached bill and extract the following fields.
 
 Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
 {
@@ -71,16 +74,25 @@ Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
   "bill": the final total or net amount payable as a decimal number (no currency symbol or commas), or 0 if not found,
   "month": "the billing month name, e.g. 'August', or empty string if not found"
 }
-
-Raw bill text:
-"""
-${rawText}
-"""
 `;
 
     const geminiRes = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
-        { contents: [{ parts: [{ text: prompt }] }] },
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
+        {
+            contents: [
+                {
+                    parts: [
+                        { text: prompt },
+                        {
+                            inline_data: {
+                                mime_type: mimeType,
+                                data: base64Data,
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
         {
             headers: {
                 "x-goog-api-key": process.env.GEMINI_API_KEY,
@@ -92,7 +104,7 @@ ${rawText}
     let aiText = geminiRes.data.candidates[0].content.parts[0].text;
     aiText = aiText.replace(/```json|```/g, "").trim();
 
-    return JSON.parse(aiText); // let caller catch parse errors
+    return JSON.parse(aiText);
 }
 
 // =============================
@@ -119,59 +131,22 @@ app.post("/api/upload", (req, res) => {
         try {
             console.log("Uploaded:", req.file.filename);
 
-            const results = await PythonShell.run(
-                path.join(__dirname, "../ai/analysis.py"),
-                {
-                    pythonPath: "python",
-                    args: [req.file.path, req.file.mimetype]
-                }
-            );
-
-            if (!results || results.length === 0) {
-                return res.status(422).json({ error: "Could not extract data from this file. Try a clearer scan or a digital PDF." });
-            }
-
             let output;
             try {
-                output = JSON.parse(results.join(""));
-                
-            } catch (parseErr) {
-                console.error("Failed to parse analysis.py output:", results);
-                return res.status(422).json({ error: "Could not read this bill. The file format may not be supported." });
+                output = await extractBillDataFromFile(req.file.path, req.file.mimetype);
+            } catch (aiErr) {
+                console.error("Gemini bill extraction failed:", aiErr.response?.data || aiErr.message);
+                return res.status(422).json({ error: "Could not read this bill. Try a clearer scan or a digital PDF." });
             }
 
-            // Regex parsing failed to find the key fields -> fall back to
-            // AI-based extraction using the raw text analysis.py included.
-            if ((!output.bill || !output.units) && output.rawText) {
-                console.log("Regex parsing incomplete, falling back to AI extraction...");
-                try {
-                    const aiOutput = await extractBillDataWithAI(output.rawText);
-                    output = {
-                        consumerNumber: aiOutput.consumerNumber || output.consumerNumber || "",
-                        units: aiOutput.units || output.units || 0,
-                        bill: aiOutput.bill || output.bill || 0,
-                        month: aiOutput.month || output.month || "",
-                    };
-                } catch (aiErr) {
-                    console.error("AI bill extraction failed:", aiErr.response?.data || aiErr.message);
-                    // Fall through to the sanity check below, which will
-                    // 422 if the AI fallback didn't rescue the data either.
-                }
+            // Clean up the temp uploaded file now that we're done with it.
+            fs.unlink(req.file.path, () => {});
+
+            if (!output.bill || !output.units) {
+                return res.status(422).json({
+                    error: "This doesn't look like a valid electricity bill."
+                });
             }
-
-            // Never send the full raw bill text back to the client.
-            delete output.rawText;
-
-            // Sanity check: did we actually extract meaningful data?
-            // If regex missed any important fields, ask Gemini
-
-
-// Final validation
-if (!output.bill || !output.units) {
-    return res.status(422).json({
-        error: "This doesn't look like a valid electricity bill."
-    });
-}
 
             res.json(output);
         } catch (err) {
