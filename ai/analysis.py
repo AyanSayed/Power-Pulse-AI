@@ -1,24 +1,39 @@
 import sys
+import os
 import re
 import json
 import pdfplumber
 import calendar
-from ocr import extract_text_from_pdf
-
+from ocr import extract_text_from_pdf, extract_text_from_image
 file_path = sys.argv[1]
+mime_type = sys.argv[2]
+
+
+extension = os.path.splitext(file_path)[1].lower()
 
 text = ""
 
-# First try extracting text using pdfplumber
-with pdfplumber.open(file_path) as pdf:
-    for page in pdf.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text += page_text + "\n"
+if mime_type == "application/pdf":
 
-# If almost no text was extracted, use OCR
-if len(text.strip()) < 50:
-    text = extract_text_from_pdf(file_path)
+    # First try extracting text using pdfplumber
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+
+    # If almost no text was extracted, use OCR
+    if len(text.strip()) < 50:
+        text = extract_text_from_pdf(file_path)
+
+elif mime_type.startswith("image/"):
+
+    # Direct OCR for image files
+    text = extract_text_from_image(file_path)
+
+else:
+    print(json.dumps({"error": "Unsupported file type"}))
+    sys.exit()
 
 
 def first_match(patterns, source_text, flags=0):

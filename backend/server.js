@@ -123,7 +123,7 @@ app.post("/api/upload", (req, res) => {
                 path.join(__dirname, "../ai/analysis.py"),
                 {
                     pythonPath: "python",
-                    args: [req.file.path]
+                    args: [req.file.path, req.file.mimetype]
                 }
             );
 
@@ -134,6 +134,7 @@ app.post("/api/upload", (req, res) => {
             let output;
             try {
                 output = JSON.parse(results.join(""));
+                
             } catch (parseErr) {
                 console.error("Failed to parse analysis.py output:", results);
                 return res.status(422).json({ error: "Could not read this bill. The file format may not be supported." });

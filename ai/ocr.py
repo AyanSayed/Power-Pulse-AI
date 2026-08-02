@@ -1,5 +1,6 @@
 import pytesseract
 from pdf2image import convert_from_path
+from PIL import Image
 
 # Tesseract path
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -22,11 +23,23 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 
+def extract_text_from_image(image_path):
+    image = Image.open(image_path)
+
+    text = pytesseract.image_to_string(image)
+
+    return text
+
+
 # Only for testing
 if __name__ == "__main__":
-    pdf = input("Enter PDF path: ")
 
-    extracted = extract_text_from_pdf(pdf)
+    file_path = input("Enter PDF/Image path: ")
+
+    if file_path.lower().endswith(".pdf"):
+        extracted = extract_text_from_pdf(file_path)
+    else:
+        extracted = extract_text_from_image(file_path)
 
     print("\n========== OCR TEXT ==========\n")
     print(extracted)
