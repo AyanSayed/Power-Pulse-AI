@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../services/apiClient";
 import { FaWallet } from "react-icons/fa";
 import ViewMoreButton from "./ViewMoreButton";
 
-const API_URL = import.meta.env.VITE_API_URL;
 const RATE_PER_UNIT = 8.2;
 const BUDGET_KEY = "pp_budget_target";
 const DEFAULT_TARGET = 3000;
@@ -19,10 +18,9 @@ function BudgetMiniCard() {
 
   useEffect(() => {
     let cancelled = false;
-
     async function fetchRunRate() {
       try {
-        const res = await axios.get(`${API_URL}/api/meter-reading/run-rate`);
+        const res = await apiClient.get("/api/meter-reading/run-rate");
         if (!cancelled) {
           setRunRate(res.data);
           setError(false);
@@ -34,7 +32,6 @@ function BudgetMiniCard() {
         if (!cancelled) setLoading(false);
       }
     }
-
     fetchRunRate();
     const interval = setInterval(fetchRunRate, 30000);
     return () => {
@@ -72,21 +69,18 @@ function BudgetMiniCard() {
         </span>
         <h3 className="text-lg font-semibold text-gray-900">Budget</h3>
       </div>
-
       <p className="text-sm text-gray-500 mb-2">
         <span className={`font-semibold ${isOverBudget ? "text-red-600" : "text-gray-700"}`}>
           ₹{Math.round(spentSoFar)}
         </span>{" "}
         of ₹{target} spent this month
       </p>
-
       <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${isOverBudget ? "bg-red-500" : "bg-teal-500"}`}
           style={{ width: `${percent}%` }}
         />
       </div>
-
       <ViewMoreButton to="/budget" label="Manage Budget" accent="teal" />
     </div>
   );

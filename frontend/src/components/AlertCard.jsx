@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import {
   FaTriangleExclamation,
   FaCircleCheck,
@@ -7,7 +6,7 @@ import {
 } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL;
+import apiClient from "../services/apiClient";
 
 const APPLIANCE_LABELS = {
   AC: "Air Conditioner",
@@ -32,7 +31,7 @@ function AlertCard({ limit, showViewAll = false }) {
 
     const fetchLatest = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/meter-reading?limit=1`);
+        const res = await apiClient.get("/api/meter-reading?limit=1");
         const data = Array.isArray(res.data) ? res.data : [];
         const latest = data[0];
         if (!isMounted) return;

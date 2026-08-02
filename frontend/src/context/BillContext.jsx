@@ -16,8 +16,6 @@ const BillContext = createContext(null);
 // highest, most-trusted tier.
 const LIVE_SENSOR_FRESHNESS_MS = 30 * 60 * 1000; // 30 minutes
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -36,15 +34,10 @@ export function BillProvider({ children }) {
   const [pincode, setPincodeState] = useState(() => loadPincode());
   const [latestMeterDoc, setLatestMeterDoc] = useState(null); // most recent /api/meter-reading doc, if any
 
-  // Fetch the most recent live sensor reading once, to detect Tier 3 eligibility.
-  // Poll for the most recent live sensor reading, to detect Tier 3 eligibility.
-  // A one-time fetch on mount isn't enough — the smart meter can come online
-  // (or drop off) at any point during a session, so we re-check periodically
-  // the same way LiveMeter.jsx polls for live readings.
   useEffect(() => {
     const fetchLatestReading = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/meter-reading?limit=1`);
+        const res = await apiClient.get("/api/meter-reading?limit=1");
         const docs = Array.isArray(res.data) ? res.data : [];
         setLatestMeterDoc(docs[0] || null);
       } catch (err) {
@@ -53,7 +46,7 @@ export function BillProvider({ children }) {
       }
     };
     fetchLatestReading();
-    const interval = setInterval(fetchLatestReading, 15000); // re-check every 15s
+    const interval = setInterval(fetchLatestReading, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -67,24 +60,25 @@ export function BillProvider({ children }) {
     setPincodeState(value);
   }
 
+  async function refreshBills() {
+    try {
+      const res = await apiClient.get("/api/bills");
+      setBills(res.data);
+    } catch (err) {
+      console.error("Bill fetch failed:", err);
+    }
+  }
+
   // Fetch bills on load
   useEffect(() => {
-    const fetchBills = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/bills`);
-        setBills(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchBills();
+    refreshBills();
   }, []);
 
   // Fetch weather once
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/weather/${CITY}`);
+        const res = await apiClient.get(`/api/weather/${CITY}`);
         setWeather(res.data);
       } catch (err) {
         console.error("Weather fetch failed:", err);
@@ -98,7 +92,7 @@ export function BillProvider({ children }) {
     if (bills.length === 0) return;
     const fetchAnalysis = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/analysis`);
+        const res = await apiClient.get("/api/analysis");
         setAiData(res.data);
       } catch (err) {
         console.error("AI analysis fetch failed:", err);
@@ -110,8 +104,6 @@ export function BillProvider({ children }) {
   const latestBill = bills.length ? bills[bills.length - 1] : null;
   const previousBill = bills.length > 1 ? bills[bills.length - 2] : null;
 
-  // Always derived live from real data — can never drift out of sync,
-  // no matter how many times bills are added or deleted.
   const hasBill = !!latestBill;
 
   // --- Three-Tier Data Pyramid: tier detection (available even with no bill yet) ---
@@ -121,6 +113,45 @@ export function BillProvider({ children }) {
     Date.now() - new Date(latestMeterDoc.receivedAt).getTime() < LIVE_SENSOR_FRESHNESS_MS;
   const dataTier = getDataTier({ hasApplianceProfile, hasLiveSensorData });
   const tierInfo = getTierInfo(dataTier);
+
+  // Defined here (not inside the !latestBill branch) so it works correctly
+  // for a brand-new user's very first bill upload, not just subsequent ones.
+  function generateExtraction() {
+    if (!latestBill) {
+      // No prior bill to base an estimate on yet — this is only used by the
+      // demo "simulate next month" flow, not the real upload path.
+      return null;
+    }
+    const nextMonthIndex = (MONTHS.indexOf(latestBill.month) + 1) % 12;
+    const variance = 0.9 + Math.random() * 0.3;
+    const units = Math.round(latestBill.units * variance);
+    const bill = Math.round(units * 8.2);
+    return {
+      month: MONTHS[nextMonthIndex],
+      units,
+      bill,
+      consumerNumber: "PP-88213",
+    };
+  }
+
+  async function confirmBill(extracted) {
+    try {
+      const status =
+        latestBill && extracted.units > latestBill.units * 1.08 ? "High" : "Normal";
+
+      await apiClient.post("/api/bills", {
+        month: extracted.month,
+        units: extracted.units,
+        bill: extracted.bill,
+        status,
+        consumerNumber: extracted.consumerNumber,
+      });
+
+      await refreshBills();
+    } catch (err) {
+      console.error("Confirm bill failed:", err);
+    }
+  }
 
   if (!latestBill) {
     return (
@@ -140,8 +171,8 @@ export function BillProvider({ children }) {
           carbonKg: 0,
           applianceBreakdown: [],
           faultAlert: null,
-          generateExtraction: () => null,
-          confirmBill: async () => {},
+          generateExtraction,
+          confirmBill,
           dataTier,
           tierInfo,
           applianceProfile,
@@ -155,8 +186,6 @@ export function BillProvider({ children }) {
     );
   }
 
-  // Prefer real backend-computed values (from /api/analysis) when available,
-  // fall back to a simple client-side estimate while the AI call is in flight.
   const trendPercent = aiData?.stats?.percentChange
     ? Number(aiData.stats.percentChange)
     : previousBill
@@ -180,9 +209,6 @@ export function BillProvider({ children }) {
   const EMISSION_FACTOR = 0.82;
   const carbonKg = Math.round(latestBill.units * EMISSION_FACTOR);
 
-  // Three-Tier Data Pyramid: Tier 3 uses real sensor readings, Tier 2 infers
-  // the split via NILM/Virtual Sub-Metering from the appliance checklist +
-  // weather, Tier 1 falls back to a generic weather-nudged estimate.
   const applianceBreakdown = estimateApplianceBreakdown({
     tier: dataTier,
     applianceProfile,
@@ -195,40 +221,6 @@ export function BillProvider({ children }) {
     : trendPercent > 8
     ? { appliance: "Water Heater", percent: Math.min(60, Math.round(trendPercent * 2.2)) }
     : null;
-
-  function generateExtraction() {
-    const nextMonthIndex = (MONTHS.indexOf(latestBill.month) + 1) % 12;
-    const variance = 0.9 + Math.random() * 0.3;
-    const units = Math.round(latestBill.units * variance);
-    const bill = Math.round(units * 8.2);
-    return {
-      month: MONTHS[nextMonthIndex],
-      units,
-      bill,
-      consumerNumber: "PP-88213",
-    };
-  }
-
-  async function confirmBill(extracted) {
-    try {
-      const status = extracted.units > latestBill.units * 1.08 ? "High" : "Normal";
-
-      await axios.post(`${API_URL}/api/bills`, {
-        user: latestBill.user,
-        month: extracted.month,
-        units: extracted.units,
-        bill: extracted.bill,
-        status,
-        consumerNumber: extracted.consumerNumber,
-      });
-
-      const res = await axios.get(`${API_URL}/api/bills`);
-      setBills(res.data);
-      // hasBill is derived from bills/latestBill above — no manual flag to set.
-    } catch (err) {
-      console.error(err);
-    }
-  }
 
   return (
     <BillContext.Provider
