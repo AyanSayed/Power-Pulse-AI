@@ -78,7 +78,7 @@ function Signup() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ayan Sharma"
+              placeholder="Full Name "
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 outline-none focus:border-amber text-sm"
             />
           </div>
