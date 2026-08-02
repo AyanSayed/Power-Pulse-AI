@@ -26,6 +26,7 @@ import ProfileAchievementsPage from "./pages/ProfileAchievementsPage";
 import ApplianceProfilePage from "./pages/ApplianceProfilePage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import VerifyOtp from "./pages/VerifyOtp";
 import NotFound from "./pages/NotFound";
 
 import { AuthProvider } from "./context/AuthContext";
@@ -43,6 +44,7 @@ function App() {
 
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/verify-otp" element={<VerifyOtp />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>

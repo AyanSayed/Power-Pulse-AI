@@ -1,32 +1,49 @@
 import { createContext, useContext, useState } from "react";
+import { loginRequest, getMeRequest } from "../services/authApi";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    () => localStorage.getItem("pp_authenticated") === "true"
-  );
+  const [token, setToken] = useState(() => localStorage.getItem("pp_token"));
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem("pp_token"));
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("pp_user");
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = (userData = { name: "Ayan Sharma", email: "ayan@example.com" }) => {
-    localStorage.setItem("pp_authenticated", "true");
-    localStorage.setItem("pp_user", JSON.stringify(userData));
-    setUser(userData);
+  // Real login: verifies email+password against the backend, which only
+  // succeeds once email OTP verification is complete.
+  const login = async (email, password) => {
+    const data = await loginRequest({ email, password }); // throws on 401/403
+    localStorage.setItem("pp_token", data.token);
+    localStorage.setItem("pp_user", JSON.stringify(data.user));
+    setToken(data.token);
+    setUser(data.user);
     setIsAuthenticated(true);
+    return data.user;
+  };
+
+  // Restores the session by asking the backend who this token belongs to.
+  const refreshUser = async () => {
+    const savedToken = localStorage.getItem("pp_token");
+    if (!savedToken) return null;
+    const data = await getMeRequest(savedToken);
+    localStorage.setItem("pp_user", JSON.stringify(data.user));
+    setUser(data.user);
+    setIsAuthenticated(true);
+    return data.user;
   };
 
   const logout = () => {
-    localStorage.removeItem("pp_authenticated");
+    localStorage.removeItem("pp_token");
     localStorage.removeItem("pp_user");
+    setToken(null);
     setUser(null);
     setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
