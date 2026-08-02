@@ -34,17 +34,12 @@ function Signup() {
     setStatus("loading");
 
     try {
-      const data = await signupRequest({ name, email, password });
+      await signupRequest({ name, email, password });
       setStatus("success");
-
-      if (data.emailSendFailed) {
-        showToast("Account created, but the email couldn't be sent — try Resend on the next screen.", "info");
-      } else {
-        showToast("Account created — check your email for a code.", "success");
-      }
+      showToast("Account created — you can log in now.", "success");
 
       setTimeout(() => {
-        navigate("/verify-otp", { state: { userId: data.userId } });
+        navigate("/login");
       }, 400);
     } catch (err) {
       setStatus("idle");

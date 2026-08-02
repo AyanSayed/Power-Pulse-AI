@@ -11,8 +11,7 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Real login: verifies email+password against the backend, which only
-  // succeeds once email OTP verification is complete.
+  // Verifies email+password against the backend and stores the session.
   const login = async (email, password) => {
     const data = await loginRequest({ email, password }); // throws on 401/403
     localStorage.setItem("pp_token", data.token);

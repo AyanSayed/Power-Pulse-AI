@@ -4,17 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export async function signupRequest({ name, email, password }) {
   const res = await axios.post(`${API_URL}/api/users/signup`, { name, email, password });
-  return res.data; // { message, userId, emailSendFailed }
-}
-
-export async function verifyEmailRequest({ userId, otp }) {
-  const res = await axios.post(`${API_URL}/api/users/verify-email`, { userId, otp });
-  return res.data;
-}
-
-export async function resendOtpRequest({ userId }) {
-  const res = await axios.post(`${API_URL}/api/users/resend-otp`, { userId });
-  return res.data;
+  return res.data; // { message, user }
 }
 
 export async function loginRequest({ email, password }) {

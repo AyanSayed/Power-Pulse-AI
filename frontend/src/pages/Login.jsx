@@ -41,16 +41,6 @@ function Login() {
     } catch (err) {
       setStatus("idle");
       triggerShake();
-
-      // 403 = credentials were correct but email isn't verified yet —
-      // send them straight back to the OTP screen instead of just failing.
-      if (err.response?.status === 403) {
-        const { userId } = err.response.data;
-        showToast("Please finish verifying your email.", "info");
-        navigate("/verify-otp", { state: { userId } });
-        return;
-      }
-
       showToast(err.response?.data?.message || "Login failed.", "error");
     }
   };
