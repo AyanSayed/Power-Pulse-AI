@@ -1,33 +1,66 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaBolt } from "react-icons/fa";
+import { FaBolt, FaSpinner, FaCheck } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { isGmailAddress, GMAIL_ONLY_MESSAGE } from "../utils/validateEmail";
 
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { showToast } = useToast();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [shake, setShake] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | loading | success
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: replace with real API call once backend auth is ready
-    login({ name: email.split("@")[0] || "Ayan Sharma", email });
-    showToast("Logged in successfully", "success");
-    navigate("/");
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 420);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!isGmailAddress(email)) {
+      setEmailError(GMAIL_ONLY_MESSAGE);
+      showToast(GMAIL_ONLY_MESSAGE, "error");
+      triggerShake();
+      return;
+    }
+
+    setEmailError("");
+    setStatus("loading");
+
+    try {
+      await login(email, password);
+      setStatus("success");
+      showToast("Logged in successfully", "success");
+      setTimeout(() => navigate("/"), 400);
+    } catch (err) {
+      setStatus("idle");
+      triggerShake();
+      showToast(err.response?.data?.message || "Login failed.", "error");
+    }
+  };
+
+  const isBusy = status === "loading" || status === "success";
+
   return (
-    <div className="min-h-screen bg-navy flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen auth-gradient-bg flex items-center justify-center px-4">
+      <div
+        className={`w-full max-w-md bg-white rounded-2xl shadow-xl p-8 page-enter ${
+          shake ? "animate-shake" : ""
+        }`}
+      >
         <div className="flex items-center gap-3 mb-8">
           <FaBolt className="text-amber text-2xl bolt-pulse" />
           <h1 className="font-display font-bold text-xl text-ink">PowerPulse</h1>
         </div>
 
         <h2 className="font-display text-2xl font-semibold text-ink mb-1">Welcome back</h2>
-        <p className="text-slate text-sm mb-6">Log in to see your electricity insights.</p>
+        <p className="text-slate text-sm mb-6">Log in to keep tracking your electricity usage.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -36,10 +69,18 @@ function Login() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 outline-none focus:border-amber text-sm"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError("");
+              }}
+              placeholder="you@gmail.com"
+              className={`w-full px-4 py-2.5 rounded-lg border outline-none text-sm focus:border-amber ${
+                emailError ? "border-coral" : "border-gray-200"
+              }`}
             />
+            {emailError && (
+              <p className="text-coral text-xs mt-1.5 fade-in">{emailError}</p>
+            )}
           </div>
 
           <div>
@@ -47,6 +88,8 @@ function Login() {
             <input
               type="password"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 outline-none focus:border-amber text-sm"
             />
@@ -54,14 +97,17 @@ function Login() {
 
           <button
             type="submit"
-            className="w-full bg-amber text-navy font-display font-semibold py-2.5 rounded-lg hover:opacity-90 transition"
+            disabled={isBusy}
+            className="btn-animated w-full bg-amber text-navy font-display font-semibold py-2.5 rounded-lg hover:opacity-90 transition disabled:opacity-80 flex items-center justify-center gap-2"
           >
-            Log In
+            {status === "loading" && <FaSpinner className="spin" />}
+            {status === "success" && <FaCheck className="animate-success" />}
+            {status === "loading" ? "Logging in..." : status === "success" ? "Success!" : "Log In"}
           </button>
         </form>
 
         <p className="text-sm text-slate text-center mt-6">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link to="/signup" className="text-amber font-medium hover:underline">
             Sign up
           </Link>
