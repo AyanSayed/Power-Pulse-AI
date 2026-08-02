@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import CountUp from "./CountUp";
 
 function EnergyScoreRing({ score = 82 }) {
+  // Guard against NaN/undefined/out-of-range values from upstream data
+  // (e.g. before AI analysis has loaded, or if the backend returns bad data).
+  const safeScore = Number.isFinite(score) ? Math.max(0, Math.min(100, score)) : 0;
+
   const [animatedScore, setAnimatedScore] = useState(0);
 
   const radius = 42;
@@ -9,26 +13,26 @@ function EnergyScoreRing({ score = 82 }) {
   const offset = circumference - (animatedScore / 100) * circumference;
 
   useEffect(() => {
-    const raf = requestAnimationFrame(() => setAnimatedScore(score));
+    const raf = requestAnimationFrame(() => setAnimatedScore(safeScore));
     return () => cancelAnimationFrame(raf);
-  }, [score]);
+  }, [safeScore]);
 
   const getStatus = () => {
-    if (score >= 85)
+    if (safeScore >= 85)
       return {
         text: "🟢 Excellent",
         color: "text-green-600",
         change: "+8 from last month",
       };
 
-    if (score >= 70)
+    if (safeScore >= 70)
       return {
         text: "🟢 Good",
         color: "text-green-600",
         change: "+6 from last month",
       };
 
-    if (score >= 50)
+    if (safeScore >= 50)
       return {
         text: "🟡 Average",
         color: "text-yellow-600",
@@ -81,7 +85,7 @@ function EnergyScoreRing({ score = 82 }) {
 
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-xl font-bold text-gray-900">
-            <CountUp end={score} duration={1000} />
+            <CountUp end={safeScore} duration={1000} />
           </span>
         </div>
       </div>

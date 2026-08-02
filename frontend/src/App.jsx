@@ -5,10 +5,20 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Dashboard from "./pages/Dashboard";
-import Bills from "./pages/Bills";
-import AIInsightsPage from "./pages/AIInsightsPage";
+import BillsUploadPage from "./pages/BillsUploadPage";
+import DailyUsagePage from "./pages/DailyUsagePage";
+import BillHistoryPage from "./pages/BillHistoryPage";
+import InsightsPage from "./pages/InsightsPage";
+import AppliancesPage from "./pages/AppliancesPage";
+import CarbonPage from "./pages/CarbonPage";
+import UsageTrendsPage from "./pages/UsageTrendsPage";
+import BudgetPage from "./pages/BudgetPage";
+import SimulatorPage from "./pages/SimulatorPage";
 import UploadBill from "./pages/UploadBill";
 import Profile from "./pages/Profile";
+import ProfileHomeDetailsPage from "./pages/ProfileHomeDetailsPage";
+import ProfileAchievementsPage from "./pages/ProfileAchievementsPage";
+import ApplianceProfilePage from "./pages/ApplianceProfilePage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -16,7 +26,13 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./context/AuthContext";
 import { BillProvider } from "./context/BillContext";
 import { ToastProvider } from "./context/ToastContext";
+import { useBill } from "./context/BillContext";
+import { Navigate } from "react-router-dom";
 
+function Tier3Route({ children }) {
+  const { dataTier } = useBill();
+  return dataTier === 3 ? children : <Navigate to="/" replace />;
+}
 function App() {
   return (
     <BrowserRouter>
@@ -26,46 +42,36 @@ function App() {
 
             <Routes>
 
-              {/* Public Routes */}
-
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-
-              {/* Protected Routes */}
-
               <Route element={<ProtectedRoute />}>
-
                 <Route element={<Layout />}>
 
                   <Route path="/" element={<Dashboard />} />
 
-                  <Route
-                    path="/bills"
-                    element={<Bills />}
-                  />
+                  <Route path="/bills/upload" element={<BillsUploadPage />} />
+                  <Route path="/bills/daily-usage" element={<DailyUsagePage />} />
+                  <Route path="/bills/history" element={<BillHistoryPage />} />
 
-                  <Route
-                    path="/upload"
-                    element={<UploadBill />}
-                  />
+                  <Route path="/upload" element={<UploadBill />} />
 
-                  <Route
-                    path="/ai-insights"
-                    element={<AIInsightsPage />}
-                  />
+                  <Route path="/budget" element={<BudgetPage />} />
 
-                  <Route
-                    path="/profile"
-                    element={<Profile />}
-                  />
+                  <Route path="/ai-insights" element={<InsightsPage />} />
+                  <Route path="/ai-insights/appliances" element={<AppliancesPage />} />
+                  <Route path="/ai-insights/carbon" element={<CarbonPage />} />
+                  <Route path="/ai-insights/usage-trends" element={<UsageTrendsPage />} />
 
-                  <Route
-                    path="/live-meter"
-                    element={<LiveMeter />}
-                  />
+                  <Route path="/simulator" element={<SimulatorPage />} />
+
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/profile/home-details" element={<ProfileHomeDetailsPage />} />
+                  <Route path="/profile/achievements" element={<ProfileAchievementsPage />} />
+                  <Route path="/profile/appliance-profile" element={<ApplianceProfilePage />} />
+
+                  <Route path="/live-meter" element={<Tier3Route><LiveMeter /></Tier3Route>} />
 
                 </Route>
-
               </Route>
 
               <Route path="*" element={<NotFound />} />

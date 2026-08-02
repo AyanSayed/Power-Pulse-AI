@@ -2,7 +2,6 @@ import {
   FaRobot,
   FaArrowTrendUp,
   FaTemperatureHigh,
-  FaTriangleExclamation,
   FaCircleCheck,
 } from "react-icons/fa6";
 
@@ -11,7 +10,6 @@ function AIInsights({
   trendPercent,
   predictedBill,
   weatherTemp,
-  faultAlert,
 }) {
   const status =
     trendPercent > 5
@@ -104,51 +102,23 @@ function AIInsights({
 
       {/* Bottom Status */}
       <div className="border-t pt-5">
+        <div className="flex gap-3">
 
-        {faultAlert ? (
-          <div className="flex gap-3">
-
-            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-              <FaTriangleExclamation />
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900">
-                {faultAlert.appliance}
-              </h3>
-
-              <p className="text-sm text-gray-600 leading-6">
-                Usage is{" "}
-                <span className="font-semibold text-red-600">
-                  {faultAlert.percent}% higher
-                </span>{" "}
-                than normal. This could indicate abnormal consumption or an
-                appliance fault.
-              </p>
-            </div>
-
+          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+            <FaCircleCheck />
           </div>
-        ) : (
-          <div className="flex gap-3">
 
-            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-              <FaCircleCheck />
-            </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">
+              System Healthy
+            </h3>
 
-            <div>
-              <h3 className="font-semibold text-gray-900">
-                System Healthy
-              </h3>
-
-              <p className="text-sm text-gray-600 leading-6">
-                No unusual appliance activity detected. Your home's energy
-                consumption appears normal.
-              </p>
-            </div>
-
+            <p className="text-sm text-gray-600 leading-6">
+              No unusual appliance activity detected in your recent usage.
+            </p>
           </div>
-        )}
 
+        </div>
       </div>
 
     </div>
