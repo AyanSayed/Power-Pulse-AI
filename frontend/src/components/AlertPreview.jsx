@@ -1,12 +1,55 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { FaTriangleExclamation } from "react-icons/fa6";
-import { useBill } from "../context/BillContext";
-import { generateDiagnostics } from "../utils/diagnosticsEngine";
 import ViewMoreButton from "./ViewMoreButton";
 
-function AlertPreview() {
-  const { trendPercent, applianceBreakdown, weatherTemp, latestBill } = useBill();
+const API_URL = import.meta.env.VITE_API_URL;
 
-  const alert = generateDiagnostics({ trendPercent, applianceBreakdown, weatherTemp, latestBill });
+const APPLIANCE_LABELS = {
+  AC: "Air Conditioner",
+  WaterHeater: "Water Heater",
+  Refrigerator: "Refrigerator",
+  WashingMachine: "Washing Machine",
+  TV: "TV",
+  Lights: "Lights",
+  Others: "Other Appliances",
+};
+
+function getLabel(name) {
+  return APPLIANCE_LABELS[name] || name;
+}
+
+function AlertPreview() {
+  const [readings, setReadings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchLatest = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/meter-reading?limit=1`);
+        const data = Array.isArray(res.data) ? res.data : [];
+        const latest = data[0];
+        if (!isMounted) return;
+        setReadings(Array.isArray(latest?.readings) ? latest.readings : []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Alert preview fetch failed:", err);
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchLatest();
+    const interval = setInterval(fetchLatest, 1500);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const faulted = readings.filter((r) => r.fault);
+  const alert = faulted[0] || null;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
@@ -20,31 +63,27 @@ function AlertPreview() {
         </div>
       </div>
 
-      {alert ? (
+      {loading ? (
+        <p className="text-sm text-gray-400">Checking live meter status...</p>
+      ) : alert ? (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <h3 className="font-semibold text-gray-900">
-            {alert.appliance}
-            {alert.appliance !== "Unusual usage" && " health check"}
-          </h3>
+          <h3 className="font-semibold text-gray-900">{getLabel(alert.appliance)}</h3>
           <p className="text-gray-600 mt-2 leading-6">
-            <span className="font-semibold text-red-600">{alert.percent}% higher</span> than a healthy
-            baseline. {alert.cause}
-          </p>
-          <p className="text-sm text-gray-500 mt-3">
-            Potential monthly impact:{" "}
-            <span className="font-semibold text-red-600">₹{alert.impactRs}</span>
+            Fault flagged by your smart meter —{" "}
+            <span className="font-semibold text-red-600">{alert.power}W</span> at{" "}
+            {alert.voltage}V, {alert.current}A.
           </p>
         </div>
       ) : (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
           <h3 className="font-semibold text-gray-900">All Systems Normal</h3>
           <p className="text-gray-600 mt-2 leading-6">
-            No unusual electricity usage has been detected this month.
+            No faults detected by your smart meter.
           </p>
         </div>
       )}
 
-      <ViewMoreButton to="/ai-insights/alerts" accent="red" />
+      <ViewMoreButton to="/ai-insights" accent="red" />
     </div>
   );
 }
