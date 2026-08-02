@@ -192,7 +192,7 @@ function LiveMeter() {
     };
 
     fetchLatest();
-    const interval = setInterval(fetchLatest, 3000);
+    const interval = setInterval(fetchLatest, 1500);
     return () => {
       isMounted = false;
       clearInterval(interval);
@@ -228,7 +228,7 @@ function LiveMeter() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Live Smart Meter</h1>
         <p className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
-          <span>Polling every 3 seconds</span>
+          <span>Polling every 1.5 seconds</span>
           {lastUpdated && (() => {
             const secondsAgo = Math.max(0, Math.round((nowTick - new Date(lastUpdated).getTime()) / 1000));
             const isStale = secondsAgo > 20;

@@ -1,23 +1,59 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   FaTriangleExclamation,
   FaCircleCheck,
   FaBoltLightning,
 } from "react-icons/fa6";
 import { Link } from "react-router-dom";
-import { useBill } from "../context/BillContext";
-import { generateAllDiagnostics } from "../utils/diagnosticsEngine";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+const APPLIANCE_LABELS = {
+  AC: "Air Conditioner",
+  WaterHeater: "Water Heater",
+  Refrigerator: "Refrigerator",
+  WashingMachine: "Washing Machine",
+  TV: "TV",
+  Lights: "Lights",
+  Others: "Other Appliances",
+};
+
+function getLabel(name) {
+  return APPLIANCE_LABELS[name] || name;
+}
 
 function AlertCard({ limit, showViewAll = false }) {
-  const { trendPercent, applianceBreakdown, weatherTemp, latestBill } = useBill();
+  const [readings, setReadings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const diagnostics = generateAllDiagnostics({
-    trendPercent,
-    applianceBreakdown,
-    weatherTemp,
-    latestBill,
-  });
+  useEffect(() => {
+    let isMounted = true;
 
-  const visible = limit ? diagnostics.slice(0, limit) : diagnostics;
+    const fetchLatest = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/meter-reading?limit=1`);
+        const data = Array.isArray(res.data) ? res.data : [];
+        const latest = data[0];
+        if (!isMounted) return;
+        setReadings(Array.isArray(latest?.readings) ? latest.readings : []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Alert fetch failed:", err);
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchLatest();
+    const interval = setInterval(fetchLatest, 1500);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const faulted = readings.filter((r) => r.fault);
+  const visible = limit ? faulted.slice(0, limit) : faulted;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full hover:shadow-lg transition-all duration-300">
@@ -34,14 +70,14 @@ function AlertCard({ limit, showViewAll = false }) {
               Alerts & Status
             </h2>
             <p className="text-sm text-gray-500">
-              Monitor unusual energy usage
+              Live faults from your smart meter
             </p>
           </div>
         </div>
 
-        {showViewAll && diagnostics.length > 0 && (
+        {showViewAll && faulted.length > 0 && (
           <Link
-            to="/ai-insights/alerts"
+            to="/ai-insights"
             className="text-sm text-red-600 hover:text-red-700 font-medium whitespace-nowrap"
           >
             View All →
@@ -49,9 +85,11 @@ function AlertCard({ limit, showViewAll = false }) {
         )}
       </div>
 
-      {visible.length > 0 ? (
+      {loading ? (
+        <p className="text-sm text-gray-400">Checking live meter status...</p>
+      ) : visible.length > 0 ? (
         <div className="space-y-4">
-          {visible.map((d, index) => (
+          {visible.map((r, index) => (
             <div key={index} className="border rounded-xl p-4 bg-red-50 border-red-200">
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600 shrink-0">
@@ -60,20 +98,13 @@ function AlertCard({ limit, showViewAll = false }) {
 
                 <div>
                   <h3 className="font-semibold text-gray-900">
-                    🔴 {d.appliance}
-                    {d.appliance !== "Unusual usage" && " health check"}
+                    🔴 {getLabel(r.appliance)}
                   </h3>
 
                   <p className="text-sm text-gray-600 leading-6 mt-1">
-                    <span className="font-semibold text-red-600">
-                      {d.percent}% higher
-                    </span>{" "}
-                    than a healthy baseline. {d.cause}
-                  </p>
-
-                  <p className="text-sm text-gray-500 mt-2">
-                    Potential monthly impact:{" "}
-                    <span className="font-semibold text-red-600">₹{d.impactRs}</span>
+                    Fault flagged by your smart meter —{" "}
+                    <span className="font-semibold text-red-600">{r.power}W</span> at{" "}
+                    {r.voltage}V, {r.current}A.
                   </p>
                 </div>
               </div>
@@ -93,7 +124,7 @@ function AlertCard({ limit, showViewAll = false }) {
               </h3>
 
               <p className="text-sm text-gray-600 leading-6 mt-1">
-                No abnormal appliance usage detected.
+                No faults detected by your smart meter.
               </p>
             </div>
           </div>
