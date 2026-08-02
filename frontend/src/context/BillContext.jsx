@@ -216,12 +216,6 @@ export function BillProvider({ children }) {
     latestReadings: latestMeterDoc?.readings,
   });
 
-  const faultAlert = aiData?.insights?.alert
-    ? { appliance: "Unusual usage", percent: Math.round(Math.abs(trendPercent)) }
-    : trendPercent > 8
-    ? { appliance: "Water Heater", percent: Math.min(60, Math.round(trendPercent * 2.2)) }
-    : null;
-
   return (
     <BillContext.Provider
       value={{
