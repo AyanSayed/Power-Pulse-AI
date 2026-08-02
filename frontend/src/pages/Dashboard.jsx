@@ -6,6 +6,7 @@ import {
   FaFileUpload,
 } from "react-icons/fa";
 
+import WeatherCard from "../components/WeatherCard";
 import SummaryCard from "../components/SummaryCard";
 import EnergyScoreRing from "../components/EnergyScoreRing";
 import RunRateGauge from "../components/RunRateGauge";
@@ -67,7 +68,7 @@ function Dashboard() {
         title="No bill uploaded yet"
         message="Upload your first electricity bill to unlock AI insights and smart recommendations."
         actionLabel="Upload Bill"
-        actionTo="/bills"
+        actionTo="/bills/upload"
       />
     );
   }
@@ -118,6 +119,9 @@ function Dashboard() {
         <BudgetMiniCard />
         <UsageMiniChart data={bills} />
       </div>
+
+      {/* Weather */}
+      <WeatherCard />
 
       {/* AI Preview Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

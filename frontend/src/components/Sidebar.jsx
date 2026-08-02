@@ -33,8 +33,7 @@ const navSections = [
     icon: <FaFileInvoiceDollar />,
     base: "/bills",
     children: [
-      { to: "/bills", label: "Overview", icon: <FaFileInvoiceDollar />, end: true },
-      { to: "/bills/upload", label: "Upload Bill", icon: <FaCloudUploadAlt /> },
+      { to: "/bills/upload", label: "Upload Bill", icon: <FaCloudUploadAlt /> },,
       { to: "/bills/daily-usage", label: "Daily Usage", icon: <FaChartBar /> },
       { to: "/bills/history", label: "Bill History", icon: <FaHistory /> },
     ],
@@ -46,12 +45,8 @@ const navSections = [
     icon: <FaBrain />,
     base: "/ai-insights",
     children: [
-      { to: "/ai-insights", label: "Overview", icon: <FaBrain />, end: true },
-      { to: "/ai-insights/analysis", label: "AI Analysis", icon: <FaBrain /> },
-      { to: "/ai-insights/recommendations", label: "Recommendations", icon: <FaLightbulb /> },
-      { to: "/ai-insights/alerts", label: "Alerts", icon: <FaExclamationTriangle /> },
+      { to: "/ai-insights", label: "Insights", icon: <FaBrain />, end: true },
       { to: "/ai-insights/appliances", label: "Appliances", icon: <FaPlug /> },
-      { to: "/ai-insights/weather", label: "Weather", icon: <FaCloud /> },
       { to: "/ai-insights/carbon", label: "Carbon Footprint", icon: <FaLeaf /> },
       { to: "/ai-insights/usage-trends", label: "Usage Trends", icon: <FaChartArea /> },
     ],
