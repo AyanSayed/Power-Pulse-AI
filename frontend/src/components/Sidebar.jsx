@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useBill } from "../context/BillContext";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   FaBolt,
@@ -52,7 +53,6 @@ const navSections = [
     ],
   },
   { to: "/simulator", label: "Simulator", icon: <FaSlidersH /> },
-  { to: "/live-meter", label: "Live Meter", icon: <FaChartLine /> },
   {
     key: "profile",
     label: "Profile",
@@ -68,8 +68,8 @@ const navSections = [
 ];
 
 function Sidebar({ isOpen, onClose }) {
+  const { dataTier } = useBill();
   const location = useLocation();
-
   const [openGroups, setOpenGroups] = useState(() => {
     const initial = {};
     navSections.forEach((s) => {
@@ -118,7 +118,12 @@ function Sidebar({ isOpen, onClose }) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-6 space-y-2">
-        {navSections.map((section) => {
+        {[
+          ...navSections,
+          ...(dataTier === 3
+            ? [{ to: "/live-meter", label: "Live Meter", icon: <FaChartLine /> }]
+            : []),
+        ].map((section) => {
           if (!section.children) {
             return (
               <NavLink

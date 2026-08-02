@@ -45,7 +45,7 @@ function RecommendationPreview() {
         <p className="text-2xl font-bold text-green-600">₹{top.estimatedSaving}/month</p>
       </div>
 
-      <ViewMoreButton to="/ai-insights/recommendations" accent="amber" />
+      <ViewMoreButton to="/ai-insights" accent="amber" />
     </div>
   );
 }

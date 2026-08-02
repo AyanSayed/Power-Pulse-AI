@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import apiClient from "../services/apiClient";
 import { estimateApplianceBreakdown, getDataTier, getTierInfo } from "../utils/nilmEngine";
 import {
   loadApplianceProfile,

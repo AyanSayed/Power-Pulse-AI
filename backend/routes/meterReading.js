@@ -1,10 +1,20 @@
 ﻿const express = require("express");
 const router = express.Router();
 const MeterReading = require("../models/MeterReading");
+const { requireAuth } = require("../middleware/authMiddleware");
 
-// POST /api/meter-reading -> receives live ESP32 sensor data
+const DEVICE_KEY = process.env.METER_DEVICE_KEY;
+const OWNER_USER_ID = process.env.METER_OWNER_USER_ID;
+
+// POST /api/meter-reading -> receives live ESP32 sensor data.
+// Requires a matching device key header — not open to the public.
 router.post("/", async (req, res) => {
   try {
+    const deviceKey = req.headers["x-device-key"];
+    if (!DEVICE_KEY || deviceKey !== DEVICE_KEY) {
+      return res.status(401).json({ error: "Invalid device key" });
+    }
+
     const { timestamp, readings } = req.body;
 
     if (!readings || !Array.isArray(readings)) {
@@ -21,9 +31,14 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET /api/meter-reading -> fetch recent readings (latest first)
-router.get("/", async (req, res) => {
+// GET /api/meter-reading -> only the owning user can read live meter data.
+// Everyone else gets an empty array back, which naturally keeps them on Tier 1/2.
+router.get("/", requireAuth, async (req, res) => {
   try {
+    if (!OWNER_USER_ID || req.userId !== OWNER_USER_ID) {
+      return res.json([]);
+    }
+
     const limit = parseInt(req.query.limit) || 20;
     const recent = await MeterReading.find().sort({ receivedAt: -1 }).limit(limit);
     res.json(recent);
@@ -32,9 +47,17 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch readings" });
   }
 });
-// GET /api/meter-reading/run-rate -> monthly consumption velocity + projection
-router.get("/run-rate", async (req, res) => {
+
+// GET /api/meter-reading/run-rate -> same ownership gate
+router.get("/run-rate", requireAuth, async (req, res) => {
   try {
+    if (!OWNER_USER_ID || req.userId !== OWNER_USER_ID) {
+      return res.json({
+        unitsSoFar: 0, daysElapsed: 0, daysInMonth: 30,
+        velocity: 0, projected: 0, slabLimit: 300, zone: "green",
+      });
+    }
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -43,7 +66,7 @@ router.get("/run-rate", async (req, res) => {
       receivedAt: { $gte: startOfMonth, $lte: now },
     }).sort({ receivedAt: 1 });
 
-    let unitsSoFar = 0; // kWh
+    let unitsSoFar = 0;
 
     for (let i = 1; i < monthReadings.length; i++) {
       const prev = monthReadings[i - 1];
@@ -53,10 +76,10 @@ router.get("/run-rate", async (req, res) => {
       const currWatts = curr.readings.reduce((sum, r) => sum + (r.power || 0), 0);
 
       const dtHours = (curr.receivedAt - prev.receivedAt) / (1000 * 60 * 60);
-      if (dtHours <= 0 || dtHours > 1) continue; // skip bad gaps (e.g. server downtime)
+      if (dtHours <= 0 || dtHours > 1) continue;
 
       const avgWatts = (prevWatts + currWatts) / 2;
-      unitsSoFar += (avgWatts * dtHours) / 1000; // Wh -> kWh
+      unitsSoFar += (avgWatts * dtHours) / 1000;
     }
 
     const daysElapsed = Math.max((now - startOfMonth) / (1000 * 60 * 60 * 24), 0.5);
@@ -82,4 +105,5 @@ router.get("/run-rate", async (req, res) => {
     res.status(500).json({ error: "Failed to calculate run rate" });
   }
 });
+
 module.exports = router;
