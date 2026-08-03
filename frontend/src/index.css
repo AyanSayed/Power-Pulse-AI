@@ -105,3 +105,9 @@ body {
 .energy-app-shell aside .bg-amber { background: #f5b400; color: #172033; box-shadow: 0 5px 14px rgba(245,180,0,.24); }
 .energy-app-shell aside .border-l { border-color: #ecd48b; }
 .energy-app-shell .bg-white { box-shadow: 0 8px 24px rgba(92,70,10,.045); }
+
+.bill-health-hero { display:flex; align-items:center; gap:1rem; padding:2rem; border-radius:1.5rem; color:#fff; background:linear-gradient(125deg,#0b3140,#076b68 62%,#0e9488); box-shadow:0 16px 30px rgba(7,107,104,.18); }
+.bill-health-hero > svg { flex:none; width:3.25rem; height:3.25rem; padding:.8rem; border-radius:1rem; color:#f5b400; background:rgba(255,255,255,.12); }
+.bill-health-hero h1 { margin:.2rem 0; font-family:var(--font-display); font-size:2rem; font-weight:700; }.bill-health-hero p { color:rgba(255,255,255,.8); max-width:44rem; font-size:.92rem; }
+.bill-finding-teal { background:#e9fbf7; color:#145b57; }.bill-finding-amber { background:#fff6d9; color:#795602; }.bill-finding-rose { background:#fff0ef; color:#a03b36; }
+@media (max-width: 640px) { .bill-health-hero { align-items:flex-start; flex-wrap:wrap; padding:1.5rem; }.bill-health-hero h1 { font-size:1.55rem; }.bill-health-hero .ml-auto { margin-left:0; } }

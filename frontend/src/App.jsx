@@ -25,6 +25,7 @@ import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import ACAdvisor from "./pages/ACAdvisor";
 import EnergyToolsPage from "./pages/EnergyToolsPage";
+import BillHealthPage from "./pages/BillHealthPage";
 import { AuthProvider } from "./context/AuthContext";
 import { BillProvider } from "./context/BillContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -54,6 +55,7 @@ function App() {
                   <Route path="/bills/upload" element={<BillsUploadPage />} />
                   <Route path="/bills/daily-usage" element={<DailyUsagePage />} />
                   <Route path="/bills/history" element={<BillHistoryPage />} />
+                  <Route path="/bills/health-check" element={<BillHealthPage />} />
 
                   <Route path="/upload" element={<UploadBill />} />
 

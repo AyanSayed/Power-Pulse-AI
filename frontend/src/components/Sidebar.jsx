@@ -39,6 +39,7 @@ const navSections = [
       { to: "/bills/upload", label: "Upload Bill", icon: <FaCloudUploadAlt /> },,
       { to: "/bills/daily-usage", label: "Daily Usage", icon: <FaChartBar /> },
       { to: "/bills/history", label: "Bill History", icon: <FaHistory /> },
+      { to: "/bills/health-check", label: "Bill Health Check", icon: <FaShieldAlt /> },
     ],
   },
   { to: "/budget", label: "Budget", icon: <FaWallet /> },
