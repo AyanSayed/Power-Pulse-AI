@@ -8,6 +8,7 @@ const axios = require("axios");
 const connectDB = require("./config/db");
 const billRoutes = require("./routes/billRoutes");
 const multer = require("multer");
+const fs = require("fs");
 
 // Load environment variables
 dotenv.config();
@@ -17,7 +18,6 @@ connectDB();
 
 const app = express();
 
-// Multer setup
 // Multer setup — restrict to PDF/JPG/PNG, max 5MB
 const upload = multer({
     dest: "uploads/",
@@ -43,21 +43,18 @@ app.use("/api/analysis", require("./routes/analysis"));
 app.use("/api/dashboard", require("./routes/dashboard"));
 app.use("/api/meter-reading", require("./routes/meterReading"));
 app.use("/api/users", require("./routes/userRoutes"));
+
 // Test Route
 app.get("/", (req, res) => {
     res.send("🚀 Power Pulse AI Backend is Running...");
 });
 
 // =============================
-// AI-based bill extraction fallback
+// AI-based bill extraction (Gemini reads the file directly — PDF or image)
 // =============================
-// Used only when the regex parser in analysis.py can't find the key
-// fields (bill/units), which happens whenever a bill uses a layout the
-// regex patterns weren't written for. Sends the raw extracted PDF text
-// to Gemini and asks it to find the same fields regex was looking for.
-// This keeps the fast/free regex path as the default, and only pays for
-// an AI call on unfamiliar bill formats.
-const fs = require("fs");
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 async function extractBillDataFromFile(filePath, mimeType) {
     const fileBuffer = fs.readFileSync(filePath);
@@ -76,43 +73,63 @@ Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
 }
 `;
 
-    const geminiRes = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
-        {
-            contents: [
+    const MAX_ATTEMPTS = 3;
+    let lastErr;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        try {
+            const geminiRes = await axios.post(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
                 {
-                    parts: [
-                        { text: prompt },
+                    contents: [
                         {
-                            inline_data: {
-                                mime_type: mimeType,
-                                data: base64Data,
-                            },
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inline_data: {
+                                        mime_type: mimeType,
+                                        data: base64Data,
+                                    },
+                                },
+                            ],
                         },
                     ],
                 },
-            ],
-        },
-        {
-            headers: {
-                "x-goog-api-key": process.env.GEMINI_API_KEY,
-                "Content-Type": "application/json",
-            },
+                {
+                    headers: {
+                        "x-goog-api-key": process.env.GEMINI_API_KEY,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            let aiText = geminiRes.data.candidates[0].content.parts[0].text;
+            aiText = aiText.replace(/```json|```/g, "").trim();
+            return JSON.parse(aiText);
+        } catch (err) {
+            lastErr = err;
+            const status = err.response?.data?.error?.code;
+            const isRetryable = status === 503 || status === 429;
+
+            console.error(
+                `Gemini extraction attempt ${attempt}/${MAX_ATTEMPTS} failed:`,
+                err.response?.data || err.message
+            );
+
+            if (isRetryable && attempt < MAX_ATTEMPTS) {
+                await sleep(1500 * attempt);
+                continue;
+            }
+            throw lastErr;
         }
-    );
-
-    let aiText = geminiRes.data.candidates[0].content.parts[0].text;
-    aiText = aiText.replace(/```json|```/g, "").trim();
-
-    return JSON.parse(aiText);
+    }
 }
 
 // =============================
-// Upload Bill + AI Analysis
+// Upload Bill + AI Extraction
 // =============================
 app.post("/api/upload", (req, res) => {
     upload.single("file")(req, res, async (err) => {
-        // Handle multer-specific errors (size limit, wrong file type)
         if (err) {
             if (err.message === "INVALID_FILE_TYPE") {
                 return res.status(400).json({ error: "Only PDF, JPG, and PNG files are allowed." });
@@ -139,7 +156,6 @@ app.post("/api/upload", (req, res) => {
                 return res.status(422).json({ error: "Could not read this bill. Try a clearer scan or a digital PDF." });
             }
 
-            // Clean up the temp uploaded file now that we're done with it.
             fs.unlink(req.file.path, () => {});
 
             if (!output.bill || !output.units) {
