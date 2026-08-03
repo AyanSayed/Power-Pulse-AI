@@ -26,6 +26,7 @@ import {
   FaTrophy,
   FaCalculator,
   FaTools,
+  FaShieldAlt,
 } from "react-icons/fa";
 
 const navSections = [
