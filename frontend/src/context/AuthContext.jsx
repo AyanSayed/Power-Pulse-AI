@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { loginRequest, getMeRequest, verifyEmailOtpRequest } from "../services/authApi";
+import { loginRequest, getMeRequest } from "../services/authApi";
 
 const AuthContext = createContext(null);
 
@@ -14,16 +14,6 @@ export function AuthProvider({ children }) {
   // Verifies email+password against the backend and stores the session.
   const login = async (email, password) => {
     const data = await loginRequest({ email, password }); // throws on 401/403
-    localStorage.setItem("pp_token", data.token);
-    localStorage.setItem("pp_user", JSON.stringify(data.user));
-    setToken(data.token);
-    setUser(data.user);
-    setIsAuthenticated(true);
-    return data.user;
-  };
-
-  const completeVerification = async (email, code) => {
-    const data = await verifyEmailOtpRequest({ email, code });
     localStorage.setItem("pp_token", data.token);
     localStorage.setItem("pp_user", JSON.stringify(data.user));
     setToken(data.token);
@@ -52,7 +42,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, token, login, completeVerification, logout, refreshUser }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

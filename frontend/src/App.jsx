@@ -25,7 +25,6 @@ import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import ACAdvisor from "./pages/ACAdvisor";
 import EnergyToolsPage from "./pages/EnergyToolsPage";
-import VerifyEmail from "./pages/VerifyEmail";
 import { AuthProvider } from "./context/AuthContext";
 import { BillProvider } from "./context/BillContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -47,7 +46,6 @@ function App() {
 
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
 

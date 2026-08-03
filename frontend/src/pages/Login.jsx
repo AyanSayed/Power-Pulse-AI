@@ -40,10 +40,6 @@ function Login() {
       setTimeout(() => navigate("/"), 400);
     } catch (err) {
       setStatus("idle");
-      if (err.response?.data?.verificationRequired) {
-        navigate(`/verify-email?email=${encodeURIComponent(err.response.data.email || email)}`);
-        return;
-      }
       triggerShake();
       showToast(err.response?.data?.message || "Login failed.", "error");
     }

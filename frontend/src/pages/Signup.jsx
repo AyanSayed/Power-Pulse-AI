@@ -36,10 +36,10 @@ function Signup() {
     try {
       await signupRequest({ name, email, password });
       setStatus("success");
-      showToast("Account created — check your email for a verification code.", "success");
+      showToast("Account created — you can log in now.", "success");
 
       setTimeout(() => {
-        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        navigate("/login");
       }, 400);
     } catch (err) {
       setStatus("idle");
