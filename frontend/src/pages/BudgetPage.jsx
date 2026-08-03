@@ -1,5 +1,5 @@
 import BudgetTracker from "../components/BudgetTracker";
-
+import SlabJumpGuard from "../components/SlabJumpGuard";
 function BudgetPage() {
   return (
     <div className="space-y-8">
@@ -12,6 +12,8 @@ function BudgetPage() {
       </div>
 
       <BudgetTracker />
+      <BudgetTracker />
+      <SlabJumpGuard />
     </div>
   );
 }
