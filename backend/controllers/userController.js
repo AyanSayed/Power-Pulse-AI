@@ -10,12 +10,17 @@ const publicUser = (user) => ({ id: user._id, name: user.name, email: user.email
 
 async function sendOtpEmail(user, code) {
   const text = `Your PowerPulse verification code is ${code}. It expires in 10 minutes.`;
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+  const smtpUser = process.env.SMTP_USER || gmailUser;
+  const smtpPassword = process.env.SMTP_PASS || gmailPassword;
+  const smtpHost = process.env.SMTP_HOST || (gmailUser ? "smtp.gmail.com" : null);
+  if (!smtpHost || !smtpUser || !smtpPassword || smtpUser === "youraddress@gmail.com" || smtpPassword === "your_16_char_app_password") {
     console.log(`[DEV ONLY] Verification code for ${user.email}: ${code}`);
     return;
   }
-  const transporter = nodemailer.createTransport({ host: process.env.SMTP_HOST, port: Number(process.env.SMTP_PORT || 587), secure: process.env.SMTP_SECURE === "true", auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } });
-  await transporter.sendMail({ from: process.env.SMTP_FROM || process.env.SMTP_USER, to: user.email, subject: "Your PowerPulse verification code", text });
+  const transporter = nodemailer.createTransport({ host: smtpHost, port: Number(process.env.SMTP_PORT || 587), secure: process.env.SMTP_SECURE === "true", auth: { user: smtpUser, pass: smtpPassword } });
+  await transporter.sendMail({ from: process.env.SMTP_FROM || smtpUser, to: user.email, subject: "Your PowerPulse verification code", text });
 }
 
 async function issueOtp(user) {

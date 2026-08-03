@@ -88,3 +88,20 @@ body {
 .auth-button { width:100%; display:flex; justify-content:center; align-items:center; gap:.55rem; padding:.78rem; border-radius:.7rem; color:#062638; background:#f5b400; font-family:var(--font-display); font-weight:700; transition:.2s; }
 .auth-button:hover { background:#e5a900; transform:translateY(-1px); }.auth-button:disabled { opacity:.7; }
 .auth-link { display:block; width:100%; text-align:center; color:#087d75; font-size:.88rem; font-weight:600; }.auth-link:hover{text-decoration:underline;}
+
+/* Authenticated workspace: a soft solar palette that keeps data dense and readable. */
+.energy-app-shell { background: #fffbed; }
+.energy-app-shell main { background: radial-gradient(circle at 96% 1%, rgba(245,180,0,.18), transparent 27rem), radial-gradient(circle at 18% 85%, rgba(45,212,191,.10), transparent 28rem), #fffbed; }
+.energy-topbar { background: rgba(255,255,255,.88); backdrop-filter: blur(14px); border-color: #f4df9a; }
+.energy-app-shell aside { background: linear-gradient(180deg, #fffdf7 0%, #fff7d9 100%); color: #263142; border-right: 1px solid #f1d989; box-shadow: 8px 0 30px rgba(96,74,8,.06); }
+.energy-app-shell aside .border-navy-border { border-color: #f1dda2; }
+.energy-app-shell aside h1 { color: #122033; }
+.energy-app-shell aside .text-slate { color: #7b6d49; }
+.energy-app-shell aside .text-gray-300, .energy-app-shell aside .text-gray-400 { color: #667085; }
+.energy-app-shell aside .hover\:bg-navy-light:hover { background: #fff0ba; color: #122033; }
+.energy-app-shell aside .bg-navy-light { background: #fff1be; color: #122033; }
+.energy-app-shell aside .text-white { color: #263142; }
+.energy-app-shell aside .bg-amber\/10 { background: #fff0ba; }
+.energy-app-shell aside .bg-amber { background: #f5b400; color: #172033; box-shadow: 0 5px 14px rgba(245,180,0,.24); }
+.energy-app-shell aside .border-l { border-color: #ecd48b; }
+.energy-app-shell .bg-white { box-shadow: 0 8px 24px rgba(92,70,10,.045); }

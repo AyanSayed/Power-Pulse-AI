@@ -9,7 +9,7 @@ function Layout() {
   );
 
   return (
-    <div className="min-h-screen bg-mist">
+    <div className="energy-app-shell min-h-screen bg-mist">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Dim background only on mobile, where the sidebar overlays content */}
