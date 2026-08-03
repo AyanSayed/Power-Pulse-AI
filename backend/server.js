@@ -9,6 +9,7 @@ const connectDB = require("./config/db");
 const billRoutes = require("./routes/billRoutes");
 const multer = require("multer");
 const fs = require("fs");
+const acRoutes = require("./routes/ac.routes");
 
 // Load environment variables
 dotenv.config();
@@ -43,6 +44,7 @@ app.use("/api/analysis", require("./routes/analysis"));
 app.use("/api/dashboard", require("./routes/dashboard"));
 app.use("/api/meter-reading", require("./routes/meterReading"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/ac", acRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

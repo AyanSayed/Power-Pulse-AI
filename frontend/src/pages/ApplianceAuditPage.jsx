@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import axios from "axios";
 import { FaCalculator, FaTrash, FaPlus } from "react-icons/fa";
 
 import { useBill } from "../context/BillContext";
@@ -144,7 +145,7 @@ function ApplianceAuditPage() {
 
   const [entries, setEntries] = useState([emptyEntry(AUDIT_APPLIANCE_TYPES[0])]);
   const [addType, setAddType] = useState(AUDIT_APPLIANCE_TYPES[0].key);
-
+  const [acResult, setAcResult] = useState(null);
   const result = useMemo(() => runAudit(entries, billedUnits), [entries, billedUnits]);
   const slabIdx = currentSlabIndex(billedUnits);
   const rate = marginalRate(billedUnits);
@@ -160,6 +161,24 @@ function ApplianceAuditPage() {
 
   function removeEntry(id) {
     setEntries((prev) => prev.filter((e) => e.id !== id));
+    async function analyzeAC(entry) {
+  try {
+    const res = await axios.post("http://localhost:5000/api/ac/analyze", {
+      area: 180,
+      ceilingHeight: 10,
+      city: "Mumbai",
+      sunExposure: "Direct",
+      floor: "Top",
+      currentTon: entry.tonnage,
+      starRating: entry.starRating,
+      hoursPerDay: entry.hours,
+    });
+
+    setAcResult(res.data);
+  } catch (err) {
+    console.error(err);
+  }
+}
   }
 
   return (

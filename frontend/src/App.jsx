@@ -23,7 +23,8 @@ import ApplianceAuditPage from "./pages/ApplianceAuditPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
-
+import ACAdvisor from "./pages/ACAdvisor";
+import EnergyToolsPage from "./pages/EnergyToolsPage";
 import { AuthProvider } from "./context/AuthContext";
 import { BillProvider } from "./context/BillContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -65,7 +66,8 @@ function App() {
                   <Route path="/ai-insights/usage-trends" element={<UsageTrendsPage />} />
 
                   <Route path="/simulator" element={<SimulatorPage />} />
-
+                  <Route path="/ac-advisor" element={<ACAdvisor />} />
+                  <Route path="/energy-tools" element={<EnergyToolsPage />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/home-details" element={<ProfileHomeDetailsPage />} />
                   <Route path="/profile/achievements" element={<ProfileAchievementsPage />} />

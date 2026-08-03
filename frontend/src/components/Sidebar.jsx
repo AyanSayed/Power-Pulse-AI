@@ -25,6 +25,7 @@ import {
   FaIdCard,
   FaTrophy,
   FaCalculator,
+  FaTools,
 } from "react-icons/fa";
 
 const navSections = [
@@ -55,6 +56,8 @@ const navSections = [
     ],
   },
   { to: "/simulator", label: "Simulator", icon: <FaSlidersH /> },
+  { to: "/energy-tools", label: "Energy Tools", icon: <FaTools /> },
+  { to: "/ac-advisor", label: "AC Advisor", icon: <FaCalculator /> },
   {
     key: "profile",
     label: "Profile",
