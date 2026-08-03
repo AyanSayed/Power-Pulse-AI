@@ -68,3 +68,23 @@ body {
   background: var(--color-navy-border);
   border-radius: 8px;
 }
+
+.auth-shell { overflow: hidden; position: relative; background: #07152b; isolation: isolate; }
+.auth-shell::before { content: ""; position: absolute; inset: 0; z-index: -2; background: linear-gradient(125deg, #07152b 0%, #0b2d49 48%, #063d48 100%); }
+.auth-shell::after { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .22; background-image: linear-gradient(rgba(45,212,191,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(45,212,191,.22) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, transparent, black 18%, black 80%, transparent); }
+.auth-orb { position:absolute; z-index:-1; border-radius:999px; filter: blur(10px); opacity:.55; }
+.auth-orb-one { width:25rem; height:25rem; background:#0ea5a0; top:-12rem; left:-9rem; }
+.auth-orb-two { width:24rem; height:24rem; background:#f5b400; bottom:-15rem; right:-8rem; }
+.auth-card { background: rgba(255,255,255,.96); border: 1px solid rgba(255,255,255,.8); border-radius: 1.5rem; box-shadow: 0 28px 70px rgba(0,0,0,.3); }
+.auth-mark { display:flex; align-items:center; gap:.6rem; color:#0b2d49; font-family:var(--font-display); font-weight:700; font-size:1.15rem; margin-bottom:2rem; }
+.auth-mark svg { color:#f5b400; }
+.auth-icon { width:3.25rem; height:3.25rem; border-radius:1rem; display:grid; place-items:center; background:#e3fbf7; color:#087d75; font-size:1.25rem; margin-bottom:1rem; }
+.auth-card h1 { font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:#111827; }
+.auth-copy { color:#6b7280; font-size:.9rem; margin:.45rem 0 1.5rem; line-height:1.55; }
+.auth-card label { display:block; font-size:.84rem; font-weight:600; color:#374151; }
+.auth-input { width:100%; margin-top:.4rem; border:1px solid #d1d5db; border-radius:.7rem; padding:.7rem .85rem; outline:none; font-size:.95rem; }
+.auth-input:focus { border-color:#0f9e94; box-shadow:0 0 0 3px rgba(45,212,191,.18); }
+.otp-input { letter-spacing:.42em; text-align:center; font-family:var(--font-mono); font-weight:600; }
+.auth-button { width:100%; display:flex; justify-content:center; align-items:center; gap:.55rem; padding:.78rem; border-radius:.7rem; color:#062638; background:#f5b400; font-family:var(--font-display); font-weight:700; transition:.2s; }
+.auth-button:hover { background:#e5a900; transform:translateY(-1px); }.auth-button:disabled { opacity:.7; }
+.auth-link { display:block; width:100%; text-align:center; color:#087d75; font-size:.88rem; font-weight:600; }.auth-link:hover{text-decoration:underline;}

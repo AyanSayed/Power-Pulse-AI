@@ -40,6 +40,10 @@ function Login() {
       setTimeout(() => navigate("/"), 400);
     } catch (err) {
       setStatus("idle");
+      if (err.response?.data?.verificationRequired) {
+        navigate(`/verify-email?email=${encodeURIComponent(err.response.data.email || email)}`);
+        return;
+      }
       triggerShake();
       showToast(err.response?.data?.message || "Login failed.", "error");
     }
@@ -48,19 +52,21 @@ function Login() {
   const isBusy = status === "loading" || status === "success";
 
   return (
-    <div className="min-h-screen auth-gradient-bg flex items-center justify-center px-4">
+    <div className="auth-shell min-h-screen flex items-center justify-center px-4">
+      <div className="auth-orb auth-orb-one" />
+      <div className="auth-orb auth-orb-two" />
       <div
-        className={`w-full max-w-md bg-white rounded-2xl shadow-xl p-8 page-enter ${
+        className={`auth-card w-full max-w-md p-8 page-enter ${
           shake ? "animate-shake" : ""
         }`}
       >
-        <div className="flex items-center gap-3 mb-8">
-          <FaBolt className="text-amber text-2xl bolt-pulse" />
-          <h1 className="font-display font-bold text-xl text-ink">PowerPulse</h1>
+        <div className="auth-mark">
+          <FaBolt className="bolt-pulse" />
+          <span>PowerPulse</span>
         </div>
 
-        <h2 className="font-display text-2xl font-semibold text-ink mb-1">Welcome back</h2>
-        <p className="text-slate text-sm mb-6">Log in to keep tracking your electricity usage.</p>
+        <h2 className="font-display text-2xl font-semibold text-ink mb-1">Your energy, in focus.</h2>
+        <p className="auth-copy">Log in to track bills, spot waste, and make every unit count.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -98,7 +104,7 @@ function Login() {
           <button
             type="submit"
             disabled={isBusy}
-            className="btn-animated w-full bg-amber text-navy font-display font-semibold py-2.5 rounded-lg hover:opacity-90 transition disabled:opacity-80 flex items-center justify-center gap-2"
+            className="auth-button"
           >
             {status === "loading" && <FaSpinner className="spin" />}
             {status === "success" && <FaCheck className="animate-success" />}

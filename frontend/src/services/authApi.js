@@ -18,3 +18,13 @@ export async function getMeRequest(token) {
   });
   return res.data; // { user }
 }
+
+export async function verifyEmailOtpRequest({ email, code }) {
+  const res = await axios.post(`${API_URL}/api/users/verify-email`, { email, code });
+  return res.data;
+}
+
+export async function resendEmailOtpRequest(email) {
+  const res = await axios.post(`${API_URL}/api/users/resend-email-otp`, { email });
+  return res.data;
+}

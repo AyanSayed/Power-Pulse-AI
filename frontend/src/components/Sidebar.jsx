@@ -84,7 +84,7 @@ function Sidebar({ isOpen, onClose }) {
   });
 
   function toggleGroup(key) {
-    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+    setOpenGroups((prev) => ({ [key]: !prev[key] }));
   }
 
   function handleChildClick() {
@@ -101,12 +101,12 @@ function Sidebar({ isOpen, onClose }) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-40 w-64 min-h-screen bg-navy text-white transition-transform duration-300 overflow-y-auto ${
+      className={`fixed top-0 left-0 z-40 w-64 h-dvh flex flex-col bg-navy text-white transition-transform duration-300 ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       {/* Logo */}
-      <div className="flex items-center justify-between px-6 py-6 border-b border-navy-border">
+      <div className="shrink-0 flex items-center justify-between px-6 py-6 border-b border-navy-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber/10 flex items-center justify-center">
             <FaBolt className="text-amber text-xl bolt-pulse" />
@@ -122,7 +122,7 @@ function Sidebar({ isOpen, onClose }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 space-y-2">
+      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-6 space-y-2">
         {[
           ...navSections,
           ...(dataTier === 3
@@ -194,7 +194,7 @@ function Sidebar({ isOpen, onClose }) {
       </nav>
 
       {/* Footer */}
-      <div className="px-6 py-5 border-t border-navy-border text-xs text-slate">
+      <div className="shrink-0 px-6 py-5 border-t border-navy-border text-xs text-slate">
         <div className="flex items-center gap-2">
           <FaHistory />
           <span>Last synced 2 min ago</span>

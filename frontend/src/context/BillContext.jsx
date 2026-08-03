@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import apiClient from "../services/apiClient";
+import { useAuth } from "./AuthContext";
 import { estimateApplianceBreakdown, getDataTier, getTierInfo } from "../utils/nilmEngine";
 import {
   loadApplianceProfile,
@@ -24,6 +25,7 @@ const MONTHS = [
 const CITY = "Mumbai"; // hardcoded for demo — no user location settings yet
 
 export function BillProvider({ children }) {
+  const { token } = useAuth();
   const [bills, setBills] = useState([]);
 
   const [weather, setWeather] = useState(null); // { temperature, humidity, windspeed, weathercode }
@@ -71,8 +73,13 @@ export function BillProvider({ children }) {
 
   // Fetch bills on load
   useEffect(() => {
+    if (!token) {
+      setBills([]);
+      setAiData(null);
+      return;
+    }
     refreshBills();
-  }, []);
+  }, [token]);
 
   // Fetch weather once
   useEffect(() => {
