@@ -17,6 +17,22 @@ function AppliancesPage() {
 
       <DataTierBadge tierInfo={tierInfo} />
 
+      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="font-semibold text-emerald-900">Want real numbers, not an estimate?</p>
+          <p className="text-sm text-emerald-700">
+            Enter your appliances' actual tonnage, star rating, and run hours for an
+            independently computed cost — reconciled against your real bill.
+          </p>
+        </div>
+        <Link
+          to="/ai-insights/audit-matrix"
+          className="whitespace-nowrap bg-emerald-600 text-white font-medium px-5 py-2.5 rounded-lg hover:opacity-90 transition"
+        >
+          Open Audit Matrix
+        </Link>
+      </div>
+
       {dataTier >= 2 ? (
         <ApplianceBreakdown data={applianceBreakdown} />
       ) : (

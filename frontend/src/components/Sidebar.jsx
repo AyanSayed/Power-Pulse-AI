@@ -24,6 +24,7 @@ import {
   FaChartBar,
   FaIdCard,
   FaTrophy,
+  FaCalculator,
 } from "react-icons/fa";
 
 const navSections = [
@@ -48,6 +49,7 @@ const navSections = [
     children: [
       { to: "/ai-insights", label: "Insights", icon: <FaBrain />, end: true },
       { to: "/ai-insights/appliances", label: "Appliances", icon: <FaPlug /> },
+      { to: "/ai-insights/audit-matrix", label: "Audit Matrix", icon: <FaCalculator /> },
       { to: "/ai-insights/carbon", label: "Carbon Footprint", icon: <FaLeaf /> },
       { to: "/ai-insights/usage-trends", label: "Usage Trends", icon: <FaChartArea /> },
     ],

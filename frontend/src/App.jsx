@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import ProfileHomeDetailsPage from "./pages/ProfileHomeDetailsPage";
 import ProfileAchievementsPage from "./pages/ProfileAchievementsPage";
 import ApplianceProfilePage from "./pages/ApplianceProfilePage";
+import ApplianceAuditPage from "./pages/ApplianceAuditPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -59,6 +60,7 @@ function App() {
 
                   <Route path="/ai-insights" element={<InsightsPage />} />
                   <Route path="/ai-insights/appliances" element={<AppliancesPage />} />
+                  <Route path="/ai-insights/audit-matrix" element={<ApplianceAuditPage />} />
                   <Route path="/ai-insights/carbon" element={<CarbonPage />} />
                   <Route path="/ai-insights/usage-trends" element={<UsageTrendsPage />} />
 
