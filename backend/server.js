@@ -46,6 +46,7 @@ app.use("/api/dashboard", require("./routes/dashboard"));
 app.use("/api/meter-reading", require("./routes/meterReading"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/ac", acRoutes);
+app.use("/api/assistant", require("./routes/assistant"));
 
 // Test Route
 app.get("/", (req, res) => {

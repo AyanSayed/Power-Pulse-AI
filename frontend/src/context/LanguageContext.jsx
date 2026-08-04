@@ -11,6 +11,7 @@ export const LANGUAGES = [
 const messages = {
   en: {
     language: "Language",
+    dashboard: "Dashboard", currentBill: "Current Bill", unitsConsumed: "Units Consumed", estimatedNextBill: "Estimated Next Bill", helpAssistant: "PowerPulse Guide", askGuide: "Ask about your bill or how to use PowerPulse…", send: "Send", guideWelcome: "Hi! I can explain your bill, estimate range, slab guard, and guide you to the right page.",
     budgetTitle: "Budget Tracker",
     budgetIntro: "Set a monthly spending target and PowerPulse will tell you exactly how much you can safely use each day to stay under it.",
     remainingBudget: "Remaining Budget Tracker",
@@ -36,6 +37,7 @@ const messages = {
   },
   hi: {
     language: "भाषा",
+    dashboard: "डैशबोर्ड", currentBill: "वर्तमान बिल", unitsConsumed: "उपयोग की गई यूनिट", estimatedNextBill: "अगले बिल का अनुमान", helpAssistant: "PowerPulse गाइड", askGuide: "अपने बिल या PowerPulse इस्तेमाल करने के बारे में पूछें…", send: "भेजें", guideWelcome: "नमस्ते! मैं आपके बिल, अनुमान रेंज और स्लैब गार्ड को समझा सकता हूँ।",
     budgetTitle: "बजट ट्रैकर",
     budgetIntro: "मासिक खर्च का लक्ष्य तय करें। PowerPulse बताएगा कि बजट में रहने के लिए आप रोज़ कितनी बिजली सुरक्षित रूप से उपयोग कर सकते हैं।",
     remainingBudget: "बचा हुआ बजट",
@@ -61,6 +63,7 @@ const messages = {
   },
   mr: {
     language: "भाषा",
+    dashboard: "डॅशबोर्ड", currentBill: "सध्याचे बिल", unitsConsumed: "वापरलेली युनिट", estimatedNextBill: "पुढील बिलाचा अंदाज", helpAssistant: "PowerPulse मार्गदर्शक", askGuide: "तुमच्या बिलाबद्दल किंवा PowerPulse वापराबद्दल विचारा…", send: "पाठवा", guideWelcome: "नमस्कार! मी तुमचे बिल, अंदाज श्रेणी आणि स्लॅब गार्ड समजावून सांगू शकतो।",
     budgetTitle: "बजेट ट्रॅकर",
     budgetIntro: "मासिक खर्चाचे लक्ष्य ठरवा. बजेटमध्ये राहण्यासाठी रोज किती वीज सुरक्षितपणे वापरता येईल ते PowerPulse सांगेल.",
     remainingBudget: "शिल्लक बजेट ट्रॅकर",

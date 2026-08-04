@@ -22,8 +22,10 @@ import CountUp from "../components/CountUp";
 import { SkeletonCard, SkeletonBlock } from "../components/Skeleton";
 
 import { useBill } from "../context/BillContext";
+import { useLanguage } from "../context/LanguageContext";
 
 function Dashboard() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
 
   const {
@@ -86,21 +88,21 @@ function Dashboard() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <SummaryCard
-          title="Current Bill"
+          title={t("currentBill")}
           value={<CountUp end={latestBill?.bill ?? 0} prefix="₹" />}
           icon={<FaMoneyBillWave />}
           accent="amber"
         />
 
         <SummaryCard
-          title="Units Consumed"
+          title={t("unitsConsumed")}
           value={<CountUp end={latestBill?.units ?? 0} suffix=" kWh" />}
           icon={<FaBolt />}
           accent="navy"
         />
 
         <SummaryCard
-          title="Estimated Next Bill"
+          title={t("estimatedNextBill")}
           value={<span className="text-xl">₹{estimatedBillRange.low.toLocaleString("en-IN")}–₹{estimatedBillRange.high.toLocaleString("en-IN")}</span>}
           icon={<FaChartLine />}
           accent="coral"

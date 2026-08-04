@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FaBell, FaSearch, FaBars, FaUser, FaSignOutAlt, FaTimes } from "react-icons/fa";
+import { FaBell, FaBars, FaUser, FaSignOutAlt, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useBill } from "../context/BillContext";
@@ -106,7 +106,7 @@ function Navbar({ onMenuClick }) {
         </div>
 
         <div className="flex items-center gap-3 md:gap-5">
-          <label className="hidden sm:flex items-center gap-2 text-sm text-slate">
+          <label className="flex items-center gap-2 text-sm text-slate">
             <span className="sr-only">{t("language")}</span>
             <select
               value={language}
@@ -117,15 +117,6 @@ function Navbar({ onMenuClick }) {
               {LANGUAGES.map((option) => <option key={option.code} value={option.code}>{option.label}</option>)}
             </select>
           </label>
-          <div className="hidden md:flex items-center gap-2 bg-mist px-4 py-2 rounded-lg border border-gray-200">
-            <FaSearch className="text-slate text-sm" />
-            <input
-              type="text"
-              placeholder="Search bills, tips..."
-              className="bg-transparent outline-none text-sm placeholder:text-slate w-40"
-            />
-          </div>
-
           <div className="relative" ref={notificationRef}>
             <button
               onClick={handleBellClick}

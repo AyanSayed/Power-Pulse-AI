@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import AIHelperChat from "./AIHelperChat";
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(
@@ -11,6 +12,7 @@ function Layout() {
   return (
     <div className="energy-app-shell min-h-screen bg-mist">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AIHelperChat />
 
       {/* Dim background only on mobile, where the sidebar overlays content */}
       {sidebarOpen && (
