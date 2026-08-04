@@ -10,6 +10,7 @@ const billRoutes = require("./routes/billRoutes");
 const multer = require("multer");
 const fs = require("fs");
 const acRoutes = require("./routes/ac.routes");
+const { requireAuth } = require("./middleware/authMiddleware");
 
 // Load environment variables
 dotenv.config();
@@ -81,7 +82,7 @@ Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
             const geminiRes = await axios.post(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
+                `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || "gemini-3.6-flash"}:generateContent`,
                 {
                     contents: [
                         {
@@ -130,7 +131,7 @@ Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
 // =============================
 // Upload Bill + AI Extraction
 // =============================
-app.post("/api/upload", (req, res) => {
+app.post("/api/upload", requireAuth, (req, res) => {
     upload.single("file")(req, res, async (err) => {
         if (err) {
             if (err.message === "INVALID_FILE_TYPE") {
@@ -158,8 +159,6 @@ app.post("/api/upload", (req, res) => {
                 return res.status(422).json({ error: "Could not read this bill. Try a clearer scan or a digital PDF." });
             }
 
-            fs.unlink(req.file.path, () => {});
-
             if (!output.bill || !output.units) {
                 return res.status(422).json({
                     error: "This doesn't look like a valid electricity bill."
@@ -170,6 +169,9 @@ app.post("/api/upload", (req, res) => {
         } catch (err) {
             console.error("Processing error:", err.message);
             res.status(500).json({ error: "Failed to process bill." });
+        } finally {
+            // Uploaded bills may contain personal data. Never leave a copy on disk.
+            fs.unlink(req.file.path, () => {});
         }
     });
 });

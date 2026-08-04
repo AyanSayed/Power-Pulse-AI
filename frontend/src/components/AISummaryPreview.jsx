@@ -4,7 +4,7 @@ import { useBill } from "../context/BillContext";
 import ViewMoreButton from "./ViewMoreButton";
 
 function AISummaryPreview() {
-  const { aiExplanation, predictedBill, trendPercent } = useBill();
+  const { aiExplanation, estimatedBillRange, trendPercent } = useBill();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
@@ -22,10 +22,11 @@ function AISummaryPreview() {
 
       <div className="flex justify-between items-center mt-6 pt-4 border-t">
         <div>
-          <p className="text-xs text-gray-500">Predicted Bill</p>
+          <p className="text-xs text-gray-500">Estimated next bill</p>
           <p className="text-xl font-bold text-indigo-600">
-            ₹{(predictedBill ?? 0).toLocaleString("en-IN")}
+            ₹{estimatedBillRange.low.toLocaleString("en-IN")}–₹{estimatedBillRange.high.toLocaleString("en-IN")}
           </p>
+          <p className="text-xs text-gray-500">{estimatedBillRange.confidence}</p>
         </div>
         <div className={`text-sm font-semibold ${trendPercent > 0 ? "text-red-600" : "text-green-600"}`}>
           {trendPercent > 0 ? "+" : ""}

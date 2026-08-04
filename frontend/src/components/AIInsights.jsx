@@ -9,6 +9,7 @@ function AIInsights({
   explanation,
   trendPercent,
   predictedBill,
+  estimatedBillRange,
   weatherTemp,
 }) {
   const status =
@@ -68,16 +69,16 @@ function AIInsights({
           <div className="flex items-center gap-2 text-indigo-600 mb-2">
             <FaArrowTrendUp />
             <span className="text-sm font-medium">
-              Predicted Bill
+              Estimated next bill
             </span>
           </div>
 
           <p className="text-3xl font-bold text-gray-900">
-            ₹{(predictedBill ?? 0).toLocaleString("en-IN")}
+            ₹{estimatedBillRange.low.toLocaleString("en-IN")}–₹{estimatedBillRange.high.toLocaleString("en-IN")}
           </p>
 
           <p className="text-xs text-gray-500 mt-2">
-            Expected next billing cycle
+            {estimatedBillRange.confidence}; actual tariff changes may affect this.
           </p>
         </div>
 

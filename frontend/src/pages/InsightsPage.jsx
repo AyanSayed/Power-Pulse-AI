@@ -4,7 +4,7 @@ import Recommendations from "../components/Recommendations";
 import AlertCard from "../components/AlertCard";
 
 function InsightsPage() {
-  const { aiExplanation, trendPercent, predictedBill, weatherTemp } = useBill();
+  const { aiExplanation, trendPercent, predictedBill, estimatedBillRange, weatherTemp } = useBill();
 
   return (
     <div className="space-y-8">
@@ -21,6 +21,7 @@ function InsightsPage() {
           explanation={aiExplanation}
           trendPercent={trendPercent}
           predictedBill={predictedBill}
+          estimatedBillRange={estimatedBillRange}
           weatherTemp={weatherTemp}
         />
       </div>

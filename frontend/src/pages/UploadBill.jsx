@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaFileUpload, FaFilePdf, FaCheckCircle, FaBolt, FaMoneyBillWave, FaCalendarAlt, FaIdCard } from "react-icons/fa";
 import { useBill } from "../context/BillContext";
 import { useToast } from "../context/ToastContext";
+import apiClient from "../services/apiClient";
 
 function UploadBill() {
   const [file, setFile] = useState(null);
@@ -29,41 +30,40 @@ function UploadBill() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    console.log(data);
-
-    if (!res.ok) {
-      // Backend sent a proper error message (400/422/500) — show it, don't set extracted
-      showToast(data.error || "Failed to process bill.", "error");
-      setProcessing(false);
-      return;
-    }
-
-    setExtracted(data);
+    const response = await apiClient.post("/api/upload", formData);
+    setExtracted(response.data);
   } catch (err) {
     console.error(err);
-    showToast("Failed to process bill. Please try again.", "error");
+    showToast(err.response?.data?.error || "Failed to process bill. Please try again.", "error");
   }
 
   setProcessing(false);
 };
 
-  const handleConfirm = () => {
-    confirmBill(extracted);
-    showToast("Bill uploaded successfully", "success");
-    navigate("/");
+  const handleConfirm = async () => {
+    if (!extracted.month?.trim() || !Number.isFinite(extracted.units) || extracted.units <= 0 || !Number.isFinite(extracted.bill) || extracted.bill <= 0) {
+      showToast("Please enter a billing month, units consumed, and bill amount greater than zero.", "error");
+      return;
+    }
+
+    try {
+      await confirmBill(extracted);
+      showToast("Bill uploaded successfully", "success");
+      navigate("/");
+    } catch {
+      showToast("Could not save the bill. Please try again.", "error");
+    }
+  };
+
+  const updateExtracted = (field, value) => {
+    setExtracted((current) => ({ ...current, [field]: field === "units" || field === "bill" ? Number(value) : value }));
   };
 
   return (
     <div className="max-w-2xl">
       <h2 className="font-display text-2xl font-semibold text-ink mb-1">Upload Bill</h2>
       <p className="text-slate text-sm mb-6">
-        Upload your electricity bill (PDF or image) to extract usage data automatically.
+        Gemini reads your bill PDF or image and extracts the key details. Review them before saving.
       </p>
 
       <div
@@ -119,34 +119,35 @@ function UploadBill() {
 
       {extracted && (
         <div className="mt-6 bg-white rounded-xl border border-gray-100 border-t-4 border-t-teal p-6">
-          <h3 className="font-display text-lg font-semibold text-ink mb-4">Extracted Details</h3>
+          <h3 className="font-display text-lg font-semibold text-ink mb-1">Review extracted details</h3>
+          <p className="text-sm text-slate mb-4">AI extraction can make mistakes, so please correct any field before adding it.</p>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="flex items-center gap-2.5 text-sm">
               <FaCalendarAlt className="text-slate" />
               <div>
                 <p className="text-slate text-xs">Billing Month</p>
-                <p className="font-medium text-ink">{extracted.month}</p>
+                <input value={extracted.month || ""} onChange={(e) => updateExtracted("month", e.target.value)} className="w-full font-medium text-ink border rounded px-2 py-1" aria-label="Billing month" />
               </div>
             </div>
             <div className="flex items-center gap-2.5 text-sm">
               <FaBolt className="text-slate" />
               <div>
                 <p className="text-slate text-xs">Units Consumed</p>
-                <p className="tabular font-medium text-ink">{extracted.units} kWh</p>
+                <input type="number" min="0" value={extracted.units ?? ""} onChange={(e) => updateExtracted("units", e.target.value)} className="w-full tabular font-medium text-ink border rounded px-2 py-1" aria-label="Units consumed" />
               </div>
             </div>
             <div className="flex items-center gap-2.5 text-sm">
               <FaMoneyBillWave className="text-slate" />
               <div>
                 <p className="text-slate text-xs">Bill Amount</p>
-                <p className="tabular font-medium text-ink">₹{(extracted.bill ?? 0).toLocaleString("en-IN")}</p>
+                <input type="number" min="0" value={extracted.bill ?? ""} onChange={(e) => updateExtracted("bill", e.target.value)} className="w-full tabular font-medium text-ink border rounded px-2 py-1" aria-label="Bill amount" />
               </div>
             </div>
             <div className="flex items-center gap-2.5 text-sm">
               <FaIdCard className="text-slate" />
               <div>
                 <p className="text-slate text-xs">Consumer Number</p>
-                <p className="font-medium text-ink">{extracted.consumerNumber}</p>
+                <input value={extracted.consumerNumber || ""} onChange={(e) => updateExtracted("consumerNumber", e.target.value)} className="w-full font-medium text-ink border rounded px-2 py-1" aria-label="Consumer number" />
               </div>
             </div>
           </div>

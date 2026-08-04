@@ -17,7 +17,7 @@ function Navbar({ onMenuClick }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { showToast } = useToast();
-  const { latestBill, predictedBill, aiExplanation, weatherTemp } = useBill();
+  const { latestBill, estimatedBillRange, aiExplanation, weatherTemp } = useBill();
   const { language, setLanguage, t } = useLanguage();
 
   const notifications = [
@@ -32,14 +32,14 @@ function Navbar({ onMenuClick }) {
           },
         ]
       : []),
-    ...(latestBill && predictedBill
+    ...(latestBill && estimatedBillRange?.high
       ? [
           {
             id: 2,
             icon: "📈",
-            title: "AI Prediction",
-            summary: `AI predicts next month's bill: ₹${(predictedBill ?? 0).toLocaleString("en-IN")}.`,
-            detail: `${aiExplanation} Based on this, your predicted next bill is ₹${(predictedBill ?? 0).toLocaleString("en-IN")}.`,
+            title: "Bill estimate",
+            summary: `Estimated next bill: ₹${estimatedBillRange.low.toLocaleString("en-IN")}–₹${estimatedBillRange.high.toLocaleString("en-IN")}.`,
+            detail: `${aiExplanation} This is an estimate range, not a guaranteed bill.`,
           },
         ]
       : []),

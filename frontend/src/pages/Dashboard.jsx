@@ -33,6 +33,7 @@ function Dashboard() {
     trendPercent,
     energyScore,
     predictedBill,
+    estimatedBillRange,
   } = useBill();
 
   useEffect(() => {
@@ -99,14 +100,11 @@ function Dashboard() {
         />
 
         <SummaryCard
-          title="Predicted Bill"
-          value={<CountUp end={predictedBill} prefix="₹" />}
+          title="Estimated Next Bill"
+          value={<span className="text-xl">₹{estimatedBillRange.low.toLocaleString("en-IN")}–₹{estimatedBillRange.high.toLocaleString("en-IN")}</span>}
           icon={<FaChartLine />}
           accent="coral"
-          trend={{
-            up: trendPercent > 0,
-            label: `${Math.abs(trendPercent).toFixed(0)}% vs last month`,
-          }}
+          subtitle={estimatedBillRange.confidence}
         />
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex items-center justify-center">

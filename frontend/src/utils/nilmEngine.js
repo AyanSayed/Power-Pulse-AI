@@ -190,3 +190,23 @@ export function estimateApplianceBreakdown({ tier, applianceProfile, weatherTemp
   if (tier >= 2) return tier2Breakdown({ applianceProfile, weatherTemp });
   return tier1Breakdown(weatherTemp);
 }
+
+// A profile-based monthly total. This is intentionally an estimate: it uses
+// the appliances the user declared and typical run-times, not appliance-level
+// measurements. It is useful for narrowing a bill forecast, not for claiming
+// that we measured each appliance.
+export function estimateProfileMonthlyUnits({ applianceProfile, weatherTemp, billingDays = 30 }) {
+  const profile = { AC: 0, WaterHeater: 0, Refrigerator: 0, WashingMachine: 0, TV: 0, Lights: 0, ...applianceProfile };
+  const hours = {
+    AC: acHoursForWeather(weatherTemp),
+    WaterHeater: APPLIANCE_CATALOG.WaterHeater.baseHours,
+    Refrigerator: APPLIANCE_CATALOG.Refrigerator.baseHours,
+    WashingMachine: APPLIANCE_CATALOG.WashingMachine.baseHours,
+    TV: APPLIANCE_CATALOG.TV.baseHours,
+    Lights: APPLIANCE_CATALOG.Lights.baseHours,
+  };
+  return Object.entries(hours).reduce(
+    (total, [key, dailyHours]) => total + (profile[key] * APPLIANCE_CATALOG[key].watts * dailyHours * billingDays) / 1000,
+    0
+  );
+}

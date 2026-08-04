@@ -24,16 +24,6 @@ router.get("/", requireAuth, async (req, res) => {
       percentChange = (((latest.bill - previous.bill) / previous.bill) * 100).toFixed(1);
     }
 
-    let predictedNextBill = latest.bill;
-    if (bills.length >= 2) {
-      const diffs = [];
-      for (let i = 0; i < bills.length - 1; i++) {
-        diffs.push(bills[i].bill - bills[i + 1].bill);
-      }
-      const avgDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
-      predictedNextBill = Math.max(0, latest.bill + avgDiff);
-    }
-
     const stats = {
       latestBill: latest.bill,
       latestUnits: latest.units,
@@ -42,7 +32,6 @@ router.get("/", requireAuth, async (req, res) => {
       percentChange,
       avgUnits: avgUnits.toFixed(1),
       avgBill: avgBill.toFixed(1),
-      predictedNextBill: predictedNextBill.toFixed(1),
       billCount: bills.length,
     };
 
@@ -65,7 +54,6 @@ Data:
 - Change vs previous bill: ${stats.percentChange ? stats.percentChange + "%" : "N/A"}
 - Average units over last ${stats.billCount} bills: ${stats.avgUnits}
 - Average bill amount: ₹${stats.avgBill}
-- Predicted next bill: ₹${stats.predictedNextBill}
 
 Respond ONLY in strict JSON, no markdown, no backticks, in this exact format:
 {

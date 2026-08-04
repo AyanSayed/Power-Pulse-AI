@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import apiClient from "../services/apiClient";
 import { useAuth } from "./AuthContext";
-import { estimateApplianceBreakdown, getDataTier, getTierInfo } from "../utils/nilmEngine";
+import { estimateApplianceBreakdown, estimateProfileMonthlyUnits, getDataTier, getTierInfo } from "../utils/nilmEngine";
+import { billForUnits } from "../utils/slabRates";
 import {
   loadApplianceProfile,
   saveApplianceProfile as persistApplianceProfile,
@@ -156,8 +157,10 @@ export function BillProvider({ children }) {
       });
 
       await refreshBills();
+      return true;
     } catch (err) {
       console.error("Confirm bill failed:", err);
+      throw err;
     }
   }
 
@@ -172,6 +175,7 @@ export function BillProvider({ children }) {
           trendPercent: 0,
           energyScore: 0,
           predictedBill: 0,
+          estimatedBillRange: { low: 0, high: 0, midpoint: 0, confidence: "Baseline estimate" },
           aiExplanation: "Upload a bill to get started.",
           weatherTemp: weather?.temperature ?? null,
           weatherHumidity: weather?.humidity ?? null,
@@ -201,16 +205,25 @@ export function BillProvider({ children }) {
 
   
 
-  const predictedBill = latestBill
-  ? (
-      aiData?.stats?.predictedNextBill
-        ? Number(aiData.stats.predictedNextBill)
-        : Math.round(
-            latestBill.bill *
-              (1 + Math.max(trendPercent, 0) / 100 + 0.03)
-          )
-    )
-  : 0;
+  // Forecasts are ranges, not promises. Tier 2 narrows uncertainty using the
+  // declared appliance profile; it does not pretend to measure appliances.
+  const recentBills = bills.slice(-3);
+  const historicalUnits = recentBills.reduce((sum, bill) => sum + bill.units, 0) / recentBills.length;
+  const profileUnits = dataTier >= 2 ? estimateProfileMonthlyUnits({ applianceProfile, weatherTemp }) : 0;
+  const expectedUnits = profileUnits > 0 ? historicalUnits * 0.75 + profileUnits * 0.25 : historicalUnits;
+  const tariffBaseline = billForUnits(historicalUnits);
+  const actualBaseline = recentBills.reduce((sum, bill) => sum + bill.bill, 0) / recentBills.length;
+  const billAdjustment = tariffBaseline > 0 ? actualBaseline / tariffBaseline : 1;
+  const estimatedBill = Math.round(billForUnits(expectedUnits) * billAdjustment);
+  const uncertainty = dataTier >= 2 ? 0.12 : 0.22;
+  const estimatedBillRange = {
+    low: Math.round(estimatedBill * (1 - uncertainty)),
+    high: Math.round(estimatedBill * (1 + uncertainty)),
+    midpoint: estimatedBill,
+    confidence: dataTier >= 2 ? "Personalised estimate" : "Baseline estimate",
+  };
+  // Retained as the midpoint for the simulator until it becomes range-aware.
+  const predictedBill = estimatedBillRange.midpoint;
   const aiExplanation = aiData?.insights?.summary
     ?? (previousBill
       ? "Loading AI insights..."
@@ -259,6 +272,7 @@ const energyScore = latestBill
         trendPercent,
         energyScore,
         predictedBill,
+        estimatedBillRange,
         aiExplanation,
         weatherTemp,
         weatherHumidity: weather?.humidity ?? null,
