@@ -4,12 +4,10 @@ const { requireAuth } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.post("/", requireAuth, async (req, res) => {
-  const { question, language = "en", context = {} } = req.body;
+  const { question, context = {} } = req.body;
   if (!question || typeof question !== "string" || question.length > 500) {
     return res.status(400).json({ error: "Please ask a short question." });
   }
-
-  const languageName = { hi: "Hindi", mr: "Marathi", en: "English" }[language] || "English";
 
   // Build a short, factual snapshot of the user's real data (only what BillContext already has).
   const facts = [];
@@ -30,7 +28,7 @@ router.post("/", requireAuth, async (req, res) => {
     : "No bill data is available for this user yet — if they ask about their bill, tell them to upload one first.";
 
   const prompt = `You are the friendly in-app assistant for PowerPulse, an Indian electricity bill app.
-Reply in ${languageName}, naturally and conversationally, in 1-3 short sentences.
+Reply in English, naturally and conversationally, in 1-3 short sentences.
 If the user greets you or makes small talk, respond normally like a helpful assistant would — don't deflect to app features unless asked.
 If they ask about their bill, budget, or usage, answer using the real data below when it's available.
 Only mention app features (upload, budget, slab guard, appliance profile, bill history) when actually relevant to their question.

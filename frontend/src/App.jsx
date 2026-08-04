@@ -29,7 +29,6 @@ import BillHealthPage from "./pages/BillHealthPage";
 import { AuthProvider } from "./context/AuthContext";
 import { BillProvider } from "./context/BillContext";
 import { ToastProvider } from "./context/ToastContext";
-import { LanguageProvider } from "./context/LanguageContext";
 import { useBill } from "./context/BillContext";
 import { Navigate } from "react-router-dom";
 
@@ -41,8 +40,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <LanguageProvider>
-          <BillProvider>
+        <BillProvider>
             <ToastProvider>
 
             <Routes>
@@ -87,8 +85,7 @@ function App() {
             </Routes>
 
             </ToastProvider>
-          </BillProvider>
-        </LanguageProvider>
+        </BillProvider>
       </AuthProvider>
     </BrowserRouter>
   );

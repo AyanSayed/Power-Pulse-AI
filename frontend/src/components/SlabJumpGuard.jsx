@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaBolt, FaPen } from "react-icons/fa";
 import { computeSlabGuard } from "../utils/slabGuard";
-import { useLanguage } from "../context/LanguageContext";
 
 const STORAGE_KEY = "pp_slabguard_inputs";
 
@@ -36,7 +35,6 @@ const ZONE_STYLES = {
 };
 
 function SlabJumpGuard() {
-  const { t } = useLanguage();
   const [inputs, setInputs] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -74,7 +72,7 @@ function SlabJumpGuard() {
           <span className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
             <FaBolt />
           </span>
-          <h3 className="text-lg font-semibold text-gray-900">{t("slabGuard")}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Slab Jump Guard</h3>
         </div>
 
         <div className="flex items-center gap-3">
@@ -89,20 +87,20 @@ function SlabJumpGuard() {
               }}
               className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
             >
-              <FaPen size={12} /> {t("editReading")}
+              <FaPen size={12} /> Edit reading
             </button>
           )}
         </div>
       </div>
 
       <p className="text-sm text-gray-500 mb-4">
-        {t("manualReading")}
+        Enter today's total units used — no smart meter needed.
       </p>
 
       {editing ? (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
           <label className="text-xs text-gray-500">
-            {t("unitsUsed")}
+            Units used so far this cycle
             <input
               type="number"
               value={draft.unitsSoFar}
@@ -111,7 +109,7 @@ function SlabJumpGuard() {
             />
           </label>
           <label className="text-xs text-gray-500">
-            {t("daysElapsed")}
+            Days elapsed in cycle
             <input
               type="number"
               value={draft.daysElapsed}
@@ -120,7 +118,7 @@ function SlabJumpGuard() {
             />
           </label>
           <label className="text-xs text-gray-500">
-            {t("cycleDays")}
+            Total days in billing cycle
             <input
               type="number"
               value={draft.daysInCycle}
@@ -133,19 +131,19 @@ function SlabJumpGuard() {
               onClick={saveDraft}
               className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
             >
-              {t("update")}
+              Update
             </button>
             <button
               onClick={() => setEditing(false)}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              {t("cancel")}
+              Cancel
             </button>
           </div>
         </div>
       ) : (
         <p className="text-sm text-gray-500 mb-4">
-          {t("dayUsage", { elapsed: inputs.daysElapsed, cycle: inputs.daysInCycle, units: inputs.unitsSoFar, slab: result.slabIndex })}
+          Day {inputs.daysElapsed} of {inputs.daysInCycle} · {inputs.unitsSoFar} units used · currently in <span className="font-semibold text-gray-700">Slab {result.slabIndex}</span>
         </p>
       )}
 
@@ -159,15 +157,15 @@ function SlabJumpGuard() {
       <div className={`rounded-xl border p-4 ${zoneStyle.soft}`}>
         {result.isTopSlab ? (
           <p className="text-sm text-gray-700">
-            {t("topSlab", { projected: result.projected })}
+            You're already in the top tariff slab. Your projected total is {result.projected} units this cycle.
           </p>
         ) : result.willBreach ? (
           <p className="text-sm text-gray-700">
-            {t("breachSlab", { projected: result.projected, slab: result.slabIndex, ceiling: result.ceiling, allowance: result.safeDailyAllowance, days: result.daysLeft, saving: result.potentialSavings })}
+            At your current pace you'll finish at {result.projected} units — crossing out of Slab {result.slabIndex} (limit {result.ceiling}). Limit yourself to {result.safeDailyAllowance} units/day for the remaining {result.daysLeft} days — saving roughly ₹{result.potentialSavings}.
           </p>
         ) : (
           <p className="text-sm text-gray-700">
-            {t("safeSlab", { left: result.unitsLeftInSlab, slab: result.slabIndex, days: result.daysLeft, allowance: result.safeDailyAllowance })}
+            You have {result.unitsLeftInSlab} units left in Slab {result.slabIndex} for the next {result.daysLeft} days. Stay under {result.safeDailyAllowance} units/day to avoid the next slab.
           </p>
         )}
       </div>

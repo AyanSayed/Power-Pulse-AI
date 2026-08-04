@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useBill } from "../context/BillContext";
 import { NavLink, useLocation } from "react-router-dom";
-import { useLanguage } from "../context/LanguageContext";
 import {
   FaBolt,
   FaHome,
@@ -80,7 +79,6 @@ const navSections = [
 
 function Sidebar({ isOpen, onClose }) {
   const { dataTier } = useBill();
-  const { t } = useLanguage();
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState(() => {
     const initial = {};
@@ -146,7 +144,7 @@ function Sidebar({ isOpen, onClose }) {
                 className={linkClass}
               >
                 <span className="text-lg">{section.icon}</span>
-                <span>{t(section.labelKey) || section.label}</span>
+                <span>{section.label}</span>
               </NavLink>
             );
           }
@@ -166,7 +164,7 @@ function Sidebar({ isOpen, onClose }) {
               >
                 <span className="flex items-center gap-3">
                   <span className="text-lg">{section.icon}</span>
-                  <span>{t(section.labelKey) || section.label}</span>
+                  <span>{section.label}</span>
                 </span>
                 <span className="text-sm">
                   {isOpen ? <FaAngleDown /> : <FaAngleRight />}
@@ -190,7 +188,7 @@ function Sidebar({ isOpen, onClose }) {
                       }
                     >
                       <span className="text-sm">{child.icon}</span>
-                      <span>{t(child.labelKey) || child.label}</span>
+                      <span>{child.label}</span>
                     </NavLink>
                   ))}
                 </div>

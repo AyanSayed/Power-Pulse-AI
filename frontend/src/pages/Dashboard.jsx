@@ -22,10 +22,8 @@ import CountUp from "../components/CountUp";
 import { SkeletonCard, SkeletonBlock } from "../components/Skeleton";
 
 import { useBill } from "../context/BillContext";
-import { useLanguage } from "../context/LanguageContext";
 
 function Dashboard() {
-  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
 
   const {
@@ -68,9 +66,9 @@ function Dashboard() {
     return (
       <EmptyState
   icon={<FaFileUpload />}
-  title={t("noBillTitle")}
-  message={t("noBillMessage")}
-  actionLabel={t("uploadBillAction")}
+  title="No bill uploaded yet"
+  message="Upload your first electricity bill to unlock AI insights and smart recommendations."
+  actionLabel="Upload Bill"
   actionTo="/bills/upload"
 />
     );
@@ -88,21 +86,21 @@ function Dashboard() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <SummaryCard
-          title={t("currentBill")}
+          title="Current Bill"
           value={<CountUp end={latestBill?.bill ?? 0} prefix="₹" />}
           icon={<FaMoneyBillWave />}
           accent="amber"
         />
 
         <SummaryCard
-          title={t("unitsConsumed")}
+          title="Units Consumed"
           value={<CountUp end={latestBill?.units ?? 0} suffix=" kWh" />}
           icon={<FaBolt />}
           accent="navy"
         />
 
         <SummaryCard
-          title={t("estimatedNextBill")}
+          title="Estimated Next Bill"
           value={<span className="text-xl">₹{estimatedBillRange.low.toLocaleString("en-IN")}–₹{estimatedBillRange.high.toLocaleString("en-IN")}</span>}
           icon={<FaChartLine />}
           accent="coral"

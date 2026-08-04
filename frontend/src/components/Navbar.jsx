@@ -4,7 +4,6 @@ import { FaBell, FaBars, FaUser, FaSignOutAlt, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useBill } from "../context/BillContext";
-import { LANGUAGES, useLanguage } from "../context/LanguageContext";
 
 function Navbar({ onMenuClick }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -18,7 +17,6 @@ function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
   const { latestBill, estimatedBillRange, aiExplanation, weatherTemp } = useBill();
-  const { language, setLanguage, t } = useLanguage();
 
   const notifications = [
     ...(latestBill
@@ -97,26 +95,15 @@ function Navbar({ onMenuClick }) {
           </button>
           <div>
             <h2 className="font-display text-xl md:text-2xl font-bold text-ink">
-              {t("greeting", { name: firstName })}
+              Good evening, {firstName} 👋
             </h2>
             <p className="text-slate text-sm mt-0.5 hidden sm:block">
-              {t("subtitle")}
+              Here's your electricity overview for today.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 md:gap-5">
-          <label className="flex items-center gap-2 text-sm text-slate">
-            <span className="sr-only">{t("language")}</span>
-            <select
-              value={language}
-              onChange={(event) => setLanguage(event.target.value)}
-              className="bg-mist border border-gray-200 rounded-lg px-2 py-2 text-sm text-ink outline-none"
-              aria-label={t("language")}
-            >
-              {LANGUAGES.map((option) => <option key={option.code} value={option.code}>{option.label}</option>)}
-            </select>
-          </label>
           <div className="relative" ref={notificationRef}>
             <button
               onClick={handleBellClick}
@@ -131,7 +118,7 @@ function Navbar({ onMenuClick }) {
             {notificationOpen && (
               <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
                 <div className="px-4 py-3 border-b border-gray-100 font-display font-semibold text-sm text-ink">
-                  {t("notifications")}
+                  Notifications
                 </div>
                 <div className="p-2">
                   {notifications.map((n) => (
@@ -164,13 +151,13 @@ function Navbar({ onMenuClick }) {
                   onClick={() => setDropdownOpen(false)}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm text-ink hover:bg-mist transition"
                 >
-                  <FaUser className="text-slate" /> {t("profile")}
+                  <FaUser className="text-slate" /> Profile
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-coral hover:bg-mist transition text-left"
                 >
-                  <FaSignOutAlt /> {t("logout")}
+                  <FaSignOutAlt /> Logout
                 </button>
               </div>
             )}
@@ -207,7 +194,7 @@ function Navbar({ onMenuClick }) {
               onClick={() => setSelectedNotification(null)}
               className="mt-6 bg-amber text-navy font-display font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition"
             >
-              {t("gotIt")}
+              Got it
             </button>
           </div>
         </div>
