@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import apiClient from "../services/apiClient";
 import { FaWallet } from "react-icons/fa";
 import ViewMoreButton from "./ViewMoreButton";
+import { billForUnits } from "../utils/slabRates";
 
-const RATE_PER_UNIT = 8.2;
 const BUDGET_KEY = "pp_budget_target";
 const DEFAULT_TARGET = 3000;
 
@@ -57,7 +57,7 @@ function BudgetMiniCard() {
     );
   }
 
-  const spentSoFar = runRate.unitsSoFar * RATE_PER_UNIT;
+  const spentSoFar = billForUnits(runRate.unitsSoFar);
   const percent = Math.min((spentSoFar / target) * 100, 100);
   const isOverBudget = spentSoFar > target;
 

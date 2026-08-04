@@ -3,12 +3,14 @@ import { FaWallet, FaPen } from "react-icons/fa";
 import { useBill } from "../context/BillContext";
 import apiClient from "../services/apiClient";
 import { billForUnits, marginalRate } from "../utils/slabRates";
+import { useLanguage } from "../context/LanguageContext";
 
 const BUDGET_KEY = "pp_budget_target";
 const DEFAULT_TARGET = 3000;
 
 function BudgetTracker() {
   const { weatherTemp } = useBill();
+  const { t } = useLanguage();
 
   const [target, setTarget] = useState(() => {
     const saved = localStorage.getItem(BUDGET_KEY);
@@ -68,7 +70,7 @@ function BudgetTracker() {
     return (
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
         <p className="text-sm text-gray-500">
-          Couldn't load your budget tracker. Check back shortly.
+          {t("budgetLoadError")}
         </p>
       </div>
     );
@@ -96,7 +98,7 @@ function BudgetTracker() {
             <FaWallet />
           </span>
           <h3 className="text-lg font-semibold text-gray-900">
-            Remaining Budget Tracker
+            {t("remainingBudget")}
           </h3>
         </div>
 
@@ -108,7 +110,7 @@ function BudgetTracker() {
             }}
             className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
           >
-            <FaPen size={12} /> Edit target
+            <FaPen size={12} /> {t("editTarget")}
           </button>
         )}
       </div>
@@ -127,45 +129,38 @@ function BudgetTracker() {
             onClick={saveTarget}
             className="text-sm bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700"
           >
-            Save
+            {t("save")}
           </button>
           <button
             onClick={() => setEditing(false)}
             className="text-sm text-gray-500 hover:text-gray-700"
           >
-            Cancel
+            {t("cancel")}
           </button>
         </div>
       ) : (
         <p className="text-sm text-gray-500 mb-4">
-          Monthly target: <span className="font-semibold text-gray-700">₹{target}</span>
+          {t("monthlyTarget")} <span className="font-semibold text-gray-700">₹{target}</span>
         </p>
       )}
 
       {isOverBudget ? (
         <div className="rounded-xl bg-red-50 border border-red-100 p-4">
           <p className="text-sm text-gray-700">
-            🔴 You've already spent{" "}
-            <span className="font-bold text-red-600">₹{Math.round(spentSoFar)}</span>, over
-            your ₹{target} target with {Math.round(daysLeft)} days left this month.
+            {t("overBudget", { spent: Math.round(spentSoFar), target, days: Math.round(daysLeft) })}
           </p>
         </div>
       ) : (
         <div className="rounded-xl bg-teal-50 border border-teal-100 p-4">
           <p className="text-sm text-gray-700">
-            To stay under ₹{target}, your safe daily allowance is{" "}
-            <span className="font-bold text-teal-700">
-              {dailyAllowanceUnits.toFixed(1)} units (₹{Math.round(dailyAllowanceRs)})
-            </span>{" "}
-            per day for the next {Math.round(daysLeft)} days.
+            {t("safeAllowance", { target, units: dailyAllowanceUnits.toFixed(1), amount: Math.round(dailyAllowanceRs), days: Math.round(daysLeft) })}
           </p>
         </div>
       )}
 
       {isHot && !isOverBudget && (
         <p className="text-xs text-gray-500 mt-3">
-          🌡 It's {Math.round(weatherTemp)}°C right now — AC-driven days tend to run above
-          this allowance, so keep an eye on today's usage.
+          {t("heatWarning", { temp: Math.round(weatherTemp) })}
         </p>
       )}
     </div>

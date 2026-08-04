@@ -4,6 +4,7 @@ import { FaBell, FaSearch, FaBars, FaUser, FaSignOutAlt, FaTimes } from "react-i
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useBill } from "../context/BillContext";
+import { LANGUAGES, useLanguage } from "../context/LanguageContext";
 
 function Navbar({ onMenuClick }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -17,6 +18,7 @@ function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
   const { latestBill, predictedBill, aiExplanation, weatherTemp } = useBill();
+  const { language, setLanguage, t } = useLanguage();
 
   const notifications = [
     ...(latestBill
@@ -104,6 +106,17 @@ function Navbar({ onMenuClick }) {
         </div>
 
         <div className="flex items-center gap-3 md:gap-5">
+          <label className="hidden sm:flex items-center gap-2 text-sm text-slate">
+            <span className="sr-only">{t("language")}</span>
+            <select
+              value={language}
+              onChange={(event) => setLanguage(event.target.value)}
+              className="bg-mist border border-gray-200 rounded-lg px-2 py-2 text-sm text-ink outline-none"
+              aria-label={t("language")}
+            >
+              {LANGUAGES.map((option) => <option key={option.code} value={option.code}>{option.label}</option>)}
+            </select>
+          </label>
           <div className="hidden md:flex items-center gap-2 bg-mist px-4 py-2 rounded-lg border border-gray-200">
             <FaSearch className="text-slate text-sm" />
             <input
