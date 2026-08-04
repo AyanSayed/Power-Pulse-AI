@@ -67,12 +67,12 @@ function Dashboard() {
   if (!hasBill) {
     return (
       <EmptyState
-        icon={<FaFileUpload />}
-        title="No bill uploaded yet"
-        message="Upload your first electricity bill to unlock AI insights and smart recommendations."
-        actionLabel="Upload Bill"
-        actionTo="/bills/upload"
-      />
+  icon={<FaFileUpload />}
+  title={t("noBillTitle")}
+  message={t("noBillMessage")}
+  actionLabel={t("uploadBillAction")}
+  actionTo="/bills/upload"
+/>
     );
   }
 

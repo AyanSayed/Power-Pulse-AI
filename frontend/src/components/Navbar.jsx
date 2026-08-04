@@ -97,10 +97,10 @@ function Navbar({ onMenuClick }) {
           </button>
           <div>
             <h2 className="font-display text-xl md:text-2xl font-bold text-ink">
-              Good evening, {firstName} 👋
+              {t("greeting", { name: firstName })}
             </h2>
             <p className="text-slate text-sm mt-0.5 hidden sm:block">
-              Here's your electricity overview for today.
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -131,7 +131,7 @@ function Navbar({ onMenuClick }) {
             {notificationOpen && (
               <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
                 <div className="px-4 py-3 border-b border-gray-100 font-display font-semibold text-sm text-ink">
-                  Notifications
+                  {t("notifications")}
                 </div>
                 <div className="p-2">
                   {notifications.map((n) => (
@@ -164,13 +164,13 @@ function Navbar({ onMenuClick }) {
                   onClick={() => setDropdownOpen(false)}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm text-ink hover:bg-mist transition"
                 >
-                  <FaUser className="text-slate" /> Profile
+                  <FaUser className="text-slate" /> {t("profile")}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-coral hover:bg-mist transition text-left"
                 >
-                  <FaSignOutAlt /> Logout
+                  <FaSignOutAlt /> {t("logout")}
                 </button>
               </div>
             )}
@@ -207,7 +207,7 @@ function Navbar({ onMenuClick }) {
               onClick={() => setSelectedNotification(null)}
               className="mt-6 bg-amber text-navy font-display font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition"
             >
-              Got it
+              {t("gotIt")}
             </button>
           </div>
         </div>

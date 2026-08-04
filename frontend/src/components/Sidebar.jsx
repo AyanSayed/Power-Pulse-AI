@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useBill } from "../context/BillContext";
 import { NavLink, useLocation } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 import {
   FaBolt,
   FaHome,
@@ -30,52 +31,56 @@ import {
 } from "react-icons/fa";
 
 const navSections = [
-  { to: "/", label: "Dashboard", icon: <FaHome />, end: true },
+  { to: "/", label: "Dashboard", labelKey: "nav_dashboard", icon: <FaHome />, end: true },
   {
     key: "bills",
     label: "Bills",
+    labelKey: "nav_bills",
     icon: <FaFileInvoiceDollar />,
     base: "/bills",
     children: [
-      { to: "/bills/upload", label: "Upload Bill", icon: <FaCloudUploadAlt /> },,
-      { to: "/bills/daily-usage", label: "Daily Usage", icon: <FaChartBar /> },
-      { to: "/bills/history", label: "Bill History", icon: <FaHistory /> },
-      { to: "/bills/health-check", label: "Bill Health Check", icon: <FaShieldAlt /> },
+      { to: "/bills/upload", label: "Upload Bill", labelKey: "nav_uploadBill", icon: <FaCloudUploadAlt /> },
+      { to: "/bills/daily-usage", label: "Daily Usage", labelKey: "nav_dailyUsage", icon: <FaChartBar /> },
+      { to: "/bills/history", label: "Bill History", labelKey: "nav_billHistory", icon: <FaHistory /> },
+      { to: "/bills/health-check", label: "Bill Health Check", labelKey: "nav_billHealth", icon: <FaShieldAlt /> },
     ],
   },
-  { to: "/budget", label: "Budget", icon: <FaWallet /> },
+  { to: "/budget", label: "Budget", labelKey: "nav_budget", icon: <FaWallet /> },
   {
     key: "ai-insights",
     label: "AI Insights",
+    labelKey: "nav_aiInsights",
     icon: <FaBrain />,
     base: "/ai-insights",
     children: [
-      { to: "/ai-insights", label: "Insights", icon: <FaBrain />, end: true },
-      { to: "/ai-insights/appliances", label: "Appliances", icon: <FaPlug /> },
-      { to: "/ai-insights/audit-matrix", label: "Audit Matrix", icon: <FaCalculator /> },
-      { to: "/ai-insights/carbon", label: "Carbon Footprint", icon: <FaLeaf /> },
-      { to: "/ai-insights/usage-trends", label: "Usage Trends", icon: <FaChartArea /> },
+      { to: "/ai-insights", label: "Insights", labelKey: "nav_insights", icon: <FaBrain />, end: true },
+      { to: "/ai-insights/appliances", label: "Appliances", labelKey: "nav_appliances", icon: <FaPlug /> },
+      { to: "/ai-insights/audit-matrix", label: "Audit Matrix", labelKey: "nav_auditMatrix", icon: <FaCalculator /> },
+      { to: "/ai-insights/carbon", label: "Carbon Footprint", labelKey: "nav_carbon", icon: <FaLeaf /> },
+      { to: "/ai-insights/usage-trends", label: "Usage Trends", labelKey: "nav_usageTrends", icon: <FaChartArea /> },
     ],
   },
-  { to: "/simulator", label: "Simulator", icon: <FaSlidersH /> },
-  { to: "/energy-tools", label: "Energy Tools", icon: <FaTools /> },
-  { to: "/ac-advisor", label: "AC Advisor", icon: <FaCalculator /> },
+  { to: "/simulator", label: "Simulator", labelKey: "nav_simulator", icon: <FaSlidersH /> },
+  { to: "/energy-tools", label: "Energy Tools", labelKey: "nav_energyTools", icon: <FaTools /> },
+  { to: "/ac-advisor", label: "AC Advisor", labelKey: "nav_acAdvisor", icon: <FaCalculator /> },
   {
     key: "profile",
     label: "Profile",
+    labelKey: "nav_profile",
     icon: <FaUser />,
     base: "/profile",
     children: [
-      { to: "/profile", label: "Overview", icon: <FaUser />, end: true },
-      { to: "/profile/home-details", label: "Home Details", icon: <FaIdCard /> },
-      { to: "/profile/appliance-profile", label: "Appliance Profile", icon: <FaPlug /> },
-      { to: "/profile/achievements", label: "Achievements", icon: <FaTrophy /> },
+      { to: "/profile", label: "Overview", labelKey: "nav_profileOverview", icon: <FaUser />, end: true },
+      { to: "/profile/home-details", label: "Home Details", labelKey: "nav_homeDetails", icon: <FaIdCard /> },
+      { to: "/profile/appliance-profile", label: "Appliance Profile", labelKey: "nav_applianceProfile", icon: <FaPlug /> },
+      { to: "/profile/achievements", label: "Achievements", labelKey: "nav_achievements", icon: <FaTrophy /> },
     ],
   },
 ];
 
 function Sidebar({ isOpen, onClose }) {
   const { dataTier } = useBill();
+  const { t } = useLanguage();
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState(() => {
     const initial = {};
@@ -128,7 +133,7 @@ function Sidebar({ isOpen, onClose }) {
         {[
           ...navSections,
           ...(dataTier === 3
-            ? [{ to: "/live-meter", label: "Live Meter", icon: <FaChartLine /> }]
+            ? [{ to: "/live-meter", label: "Live Meter", labelKey: "nav_liveMeter", icon: <FaChartLine /> }]
             : []),
         ].map((section) => {
           if (!section.children) {
@@ -141,7 +146,7 @@ function Sidebar({ isOpen, onClose }) {
                 className={linkClass}
               >
                 <span className="text-lg">{section.icon}</span>
-                <span>{section.label}</span>
+                <span>{t(section.labelKey) || section.label}</span>
               </NavLink>
             );
           }
@@ -161,7 +166,7 @@ function Sidebar({ isOpen, onClose }) {
               >
                 <span className="flex items-center gap-3">
                   <span className="text-lg">{section.icon}</span>
-                  <span>{section.label}</span>
+                  <span>{t(section.labelKey) || section.label}</span>
                 </span>
                 <span className="text-sm">
                   {isOpen ? <FaAngleDown /> : <FaAngleRight />}
@@ -185,7 +190,7 @@ function Sidebar({ isOpen, onClose }) {
                       }
                     >
                       <span className="text-sm">{child.icon}</span>
-                      <span>{child.label}</span>
+                      <span>{t(child.labelKey) || child.label}</span>
                     </NavLink>
                   ))}
                 </div>
