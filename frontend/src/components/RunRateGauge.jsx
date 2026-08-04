@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../services/apiClient";
 import { FaBolt } from "react-icons/fa";
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 const ZONE_STYLES = {
   green: {
@@ -38,7 +36,7 @@ function RunRateGauge() {
 
     async function fetchRunRate() {
       try {
-        const res = await axios.get(`${API_URL}/api/meter-reading/run-rate`);
+        const res = await apiClient.get("/api/meter-reading/run-rate");
         if (!cancelled) {
           setData(res.data);
           setError(false);

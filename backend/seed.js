@@ -4,6 +4,7 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 require("dotenv").config();
 require("dotenv").config();
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 const User = require("./models/User");
 const Bill = require("./models/Bill");
 
@@ -20,7 +21,7 @@ const seedData = async () => {
     const user = await User.create({
       name: "Ayan Sharma",
       email: "ayan@example.com",
-      password: "demo1234", // plain text for now — hash this once real signup exists
+      password: await bcrypt.hash("demo1234", 10),
     });
 
     // Create sample bill history

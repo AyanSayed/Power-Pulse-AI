@@ -2,11 +2,12 @@ const express = require("express");
 const axios = require("axios");
 const router = express.Router();
 const Bill = require("../models/Bill");
+const { requireAuth } = require("../middleware/authMiddleware");
 
-// GET /api/analysis -> AI-powered bill analysis (single-user demo mode)
-router.get("/", async (req, res) => {
+// GET /api/analysis -> AI-powered bill analysis for the logged-in user.
+router.get("/", requireAuth, async (req, res) => {
   try {
-    const bills = await Bill.find().sort({ createdAt: -1 }).limit(6);
+    const bills = await Bill.find({ user: req.userId }).sort({ createdAt: -1 }).limit(6);
 
     if (!bills || bills.length === 0) {
       return res.status(404).json({ error: "No bills found yet." });

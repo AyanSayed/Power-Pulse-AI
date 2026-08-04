@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { FaWallet, FaPen } from "react-icons/fa";
 import { useBill } from "../context/BillContext";
+import apiClient from "../services/apiClient";
+import { billForUnits, marginalRate } from "../utils/slabRates";
 
-const API_URL = import.meta.env.VITE_API_URL;
-const RATE_PER_UNIT = 8.2; // ₹/unit — matches the rate used elsewhere in the app
 const BUDGET_KEY = "pp_budget_target";
 const DEFAULT_TARGET = 3000;
 
@@ -27,7 +26,7 @@ function BudgetTracker() {
 
     async function fetchRunRate() {
       try {
-        const res = await axios.get(`${API_URL}/api/meter-reading/run-rate`);
+        const res = await apiClient.get("/api/meter-reading/run-rate");
         if (!cancelled) {
           setRunRate(res.data);
           setError(false);
@@ -77,13 +76,14 @@ function BudgetTracker() {
 
   const { unitsSoFar, daysElapsed, daysInMonth } = runRate;
 
-  const spentSoFar = unitsSoFar * RATE_PER_UNIT;
+  // Use the same slab tariff model as the Slab Jump Guard and simulator.
+  // A flat rate would understate costs once a household reaches higher slabs.
+  const spentSoFar = billForUnits(unitsSoFar);
   const remaining = Math.max(target - spentSoFar, 0);
   const daysLeft = Math.max(daysInMonth - daysElapsed, 0.5);
-  const isLastDay = daysLeft < 1;
 
   const dailyAllowanceRs = remaining / daysLeft;
-  const dailyAllowanceUnits = dailyAllowanceRs / RATE_PER_UNIT;
+  const dailyAllowanceUnits = dailyAllowanceRs / marginalRate(unitsSoFar);
 
   const isOverBudget = spentSoFar > target;
   const isHot = weatherTemp !== null && weatherTemp > 30;

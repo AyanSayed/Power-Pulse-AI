@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Bill = require("../models/Bill");
+const { requireAuth } = require("../middleware/authMiddleware");
 
-// GET /api/dashboard -> summary stats + trend data for dashboard charts
-router.get("/", async (req, res) => {
+// GET /api/dashboard -> summary stats + trend data for the logged-in user.
+router.get("/", requireAuth, async (req, res) => {
   try {
-    const allBills = await Bill.find().sort({ createdAt: -1 });
+    const allBills = await Bill.find({ user: req.userId }).sort({ createdAt: -1 });
 
     if (!allBills || allBills.length === 0) {
       return res.status(404).json({ error: "No bills found yet." });

@@ -1,7 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import apiClient from "../services/apiClient";
 
-const API_URL = import.meta.env.VITE_API_URL;
 const HIGHLIGHT_DURATION = 900; // ms, how long a value stays highlighted after changing
 
 // Visual identity per appliance: icon, colored badge, and a short subtitle.
@@ -31,7 +30,7 @@ function AppliancePastReadingsModal({ onClose }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/meter-reading`);
+        const res = await apiClient.get("/api/meter-reading");
         const docs = Array.isArray(res.data) ? res.data : [];
 
         const todayStr = new Date().toDateString();
@@ -146,7 +145,7 @@ function LiveMeter() {
 
     const fetchLatest = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/meter-reading?limit=1`);
+        const res = await apiClient.get("/api/meter-reading?limit=1");
         const data = Array.isArray(res.data) ? res.data : [];
         const latest = data[0];
         if (!isMounted) return;
