@@ -15,7 +15,20 @@ function AIHelperChat() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const { latestBill, estimatedBillRange } = useBill();
+  const {
+    latestBill,
+    previousBill,
+    trendPercent,
+    energyScore,
+    estimatedBillRange,
+    aiExplanation,
+    weatherTemp,
+    weatherHumidity,
+    carbonKg,
+    applianceBreakdown,
+    dataTier,
+    tierInfo,
+  } = useBill();
   const navigate = useNavigate();
   const [messages, setMessages] = useState(() => [{ role: "assistant", text: "Hi! I can explain your bill, estimate range, slab guard, and guide you to the right page." }]);
 
@@ -36,8 +49,22 @@ function AIHelperChat() {
       const response = await apiClient.post("/api/assistant", {
         question,
         context: {
-          latestBill: latestBill ? { bill: latestBill.bill, units: latestBill.units, month: latestBill.month } : null,
+          latestBill: latestBill
+            ? { bill: latestBill.bill, units: latestBill.units, month: latestBill.month, status: latestBill.status }
+            : null,
+          previousBill: previousBill
+            ? { bill: previousBill.bill, units: previousBill.units, month: previousBill.month }
+            : null,
+          trendPercent,
+          energyScore,
           estimatedBillRange,
+          aiExplanation,
+          weatherTemp,
+          weatherHumidity,
+          carbonKg,
+          applianceBreakdown,
+          dataTier,
+          tierLabel: tierInfo?.label ?? null,
         },
       });
       setMessages((items) => [...items, { role: "assistant", text: response.data.answer }]);
