@@ -165,33 +165,20 @@ export function BillProvider({ children }) {
   }
 
   if (!latestBill) {
-    return (
-      <BillContext.Provider
-        value={{
-          bills: [],
-          hasBill,
-          latestBill: null,
-          previousBill: null,
-          trendPercent: 0,
-          energyScore: 0,
-          predictedBill: 0,
-          estimatedBillRange: { low: 0, high: 0, midpoint: 0, confidence: "Baseline estimate" },
-          aiExplanation: "Upload a bill to get started.",
-          weatherTemp: weather?.temperature ?? null,
-          weatherHumidity: weather?.humidity ?? null,
-          weatherCondition: weather?.weathercode ?? null,
-          carbonKg: 0,
-          applianceBreakdown: [],
-          generateExtraction,
-          confirmBill,
-          dataTier,
-          tierInfo,
-          applianceProfile,
-          setApplianceProfile,
-          pincode,
-          setPincode,
-        }}
-      >
+  return (
+    <BillContext.Provider
+      value={{
+        bills: [],
+        hasBill,
+        ...
+        dataTier,
+        tierInfo,
+        applianceProfile,
+        setApplianceProfile,
+        pincode,
+        setPincode,
+      }}
+    >
         {children}
       </BillContext.Provider>
     );
@@ -280,6 +267,7 @@ const energyScore = latestBill
         generateExtraction,
         confirmBill,
         dataTier,
+        hasApplianceProfile,
         tierInfo,
         applianceProfile,
         setApplianceProfile,
