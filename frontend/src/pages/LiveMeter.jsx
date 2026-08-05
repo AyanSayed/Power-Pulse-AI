@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import apiClient from "../services/apiClient";
-
+import MeterWidget from "../components/MeterWidget";
 const HIGHLIGHT_DURATION = 900; // ms, how long a value stays highlighted after changing
 
 // Visual identity per appliance: icon, colored badge, and a short subtitle.
@@ -117,6 +117,7 @@ function AppliancePastReadingsModal({ onClose }) {
         </div>
       </div>
     </div>
+    
   );
 }
 
@@ -242,7 +243,7 @@ function LiveMeter() {
           })()}
         </p>
       </div>
-
+       <MeterWidget />
       {readings.length === 0 && (
         <p className="text-gray-400">No readings yet. Make sure your ESP32 simulator is running.</p>
       )}
@@ -299,6 +300,7 @@ function LiveMeter() {
 
       {showHistory && <AppliancePastReadingsModal onClose={() => setShowHistory(false)} />}
     </div>
+    
   );
 }
 
