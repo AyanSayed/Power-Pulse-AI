@@ -62,6 +62,7 @@ const navSections = [
   { to: "/simulator", label: "Simulator", labelKey: "nav_simulator", icon: <FaSlidersH /> },
   { to: "/energy-tools", label: "Energy Tools", labelKey: "nav_energyTools", icon: <FaTools /> },
   { to: "/ac-advisor", label: "AC Advisor", labelKey: "nav_acAdvisor", icon: <FaCalculator /> },
+  { to: "/live-meter", label: "Live Meter", labelKey: "nav_liveMeter", icon: <FaChartLine /> },
   {
     key: "profile",
     label: "Profile",
@@ -128,10 +129,7 @@ function Sidebar({ isOpen, onClose }) {
 
       {/* Navigation */}
       <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-6 space-y-2">
-        {[
-          ...navSections,
-          { to: "/live-meter", label: "Live Meter", labelKey: "nav_liveMeter", icon: <FaChartLine /> },
-        ].map((section) => {
+        {navSections.map((section) => {
           if (!section.children) {
             return (
               <NavLink

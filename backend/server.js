@@ -35,7 +35,31 @@ const upload = multer({
 });
 
 // Middleware
-app.use(cors());
+// The frontend is deployed on Vercel, including preview URLs.  Configure CORS
+// before every route so both successful responses and authentication errors
+// include the headers the browser needs to expose them to the frontend.
+const allowedOrigin = (origin, callback) => {
+    // Requests from non-browser clients (ESP32, curl, Render health checks)
+    // do not have an Origin header and should not be blocked.
+    if (!origin) return callback(null, true);
+
+    const isAllowed =
+        origin === "https://power-pulse-ai.vercel.app" ||
+        /^https:\/\/power-pulse-[a-z0-9-]+-vortex-65fe\.vercel\.app$/i.test(origin) ||
+        /^http:\/\/localhost(?::\d+)?$/i.test(origin);
+
+    return callback(isAllowed ? null : new Error("CORS origin not allowed"), isAllowed);
+};
+
+const corsOptions = {
+    origin: allowedOrigin,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Device-Key"],
+    optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 
 // Routes

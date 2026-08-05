@@ -4,7 +4,7 @@ import DataTierBadge from "../components/DataTierBadge";
 import { Link } from "react-router-dom";
 
 function AppliancesPage() {
-  const { applianceBreakdown, tierInfo, dataTier } = useBill();
+  const { applianceBreakdown, tierInfo, dataTier, hasApplianceProfile } = useBill();
 
   return (
     <div className="space-y-8">

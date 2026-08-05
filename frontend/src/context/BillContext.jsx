@@ -38,6 +38,11 @@ export function BillProvider({ children }) {
   const [latestMeterDoc, setLatestMeterDoc] = useState(null); // most recent /api/meter-reading doc, if any
 
   useEffect(() => {
+    if (!token) {
+      setLatestMeterDoc(null);
+      return undefined;
+    }
+
     const fetchLatestReading = async () => {
       try {
         const res = await apiClient.get("/api/meter-reading?limit=1");
@@ -51,7 +56,7 @@ export function BillProvider({ children }) {
     fetchLatestReading();
     const interval = setInterval(fetchLatestReading, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [token]);
 
   function setApplianceProfile(profile) {
     persistApplianceProfile(profile);
