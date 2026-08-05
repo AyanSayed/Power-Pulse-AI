@@ -48,15 +48,6 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/meter-reading/run-rate -> same ownership gate
-router.get("/run-rate", requireAuth, async (req, res) => {
-  try {
-    if (!OWNER_USER_ID || req.userId !== OWNER_USER_ID) {
-      return res.json({
-        unitsSoFar: 0, daysElapsed: 0, daysInMonth: 30,
-        velocity: 0, projected: 0, slabLimit: 300, zone: "green",
-      });
-    }
 // GET /api/meter-reading/daily-summary -> today vs yesterday units, same gate as others
 router.get("/daily-summary", requireAuth, async (req, res) => {
   try {
@@ -94,6 +85,88 @@ router.get("/daily-summary", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Failed to calculate daily summary" });
   }
 });
+
+// GET /api/meter-reading/spike-check -> is TOTAL draw unusually high right now,
+// compared to what it normally is at this time? A single whole-house meter can't
+// attribute this to a specific appliance, so we don't try to.
+router.get("/spike-check", requireAuth, async (req, res) => {
+  try {
+    if (!OWNER_USER_ID || req.userId !== OWNER_USER_ID) {
+      return res.json({ currentWatts: 0, baselineWatts: 0, diffPct: 0, isSpike: false, comparedTo: null });
+    }
+
+    const totalWattsOf = (doc) => (doc.readings || []).reduce((sum, r) => sum + (r.power || 0), 0);
+
+    const latest = await MeterReading.findOne().sort({ receivedAt: -1 });
+    if (!latest) {
+      return res.json({ currentWatts: 0, baselineWatts: 0, diffPct: 0, isSpike: false, comparedTo: null });
+    }
+
+    const currentWatts = Math.round(totalWattsOf(latest) * 100) / 100;
+    const now = new Date(latest.receivedAt);
+
+    // Baseline attempt 1: readings within a 15-min window around this exact
+    // time yesterday. Most meaningful comparison — accounts for daily routine
+    // (e.g. AC on in the evening every day).
+    const WINDOW_MS = 15 * 60 * 1000;
+    const yesterdaySameTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const yWindowDocs = await MeterReading.find({
+      receivedAt: {
+        $gte: new Date(yesterdaySameTime.getTime() - WINDOW_MS),
+        $lte: new Date(yesterdaySameTime.getTime() + WINDOW_MS),
+      },
+    });
+
+    let baselineWatts = null;
+    let comparedTo = null;
+
+    if (yWindowDocs.length > 0) {
+      baselineWatts = yWindowDocs.reduce((sum, d) => sum + totalWattsOf(d), 0) / yWindowDocs.length;
+      comparedTo = "same time yesterday";
+    } else {
+      // Baseline attempt 2: no data from yesterday yet (new device) — fall back
+      // to today's rolling average over the last 2 hours, excluding the last
+      // 2 minutes so a live spike doesn't get absorbed into its own baseline.
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+      const cutoffRecent = new Date(now.getTime() - 2 * 60 * 1000);
+      const recentDocs = await MeterReading.find({
+        receivedAt: { $gte: twoHoursAgo, $lte: cutoffRecent },
+      });
+      if (recentDocs.length > 0) {
+        baselineWatts = recentDocs.reduce((sum, d) => sum + totalWattsOf(d), 0) / recentDocs.length;
+        comparedTo = "recent average today";
+      }
+    }
+
+    if (baselineWatts === null) {
+      return res.json({ currentWatts, baselineWatts: null, diffPct: 0, isSpike: false, comparedTo: null });
+    }
+
+    baselineWatts = Math.round(baselineWatts * 100) / 100;
+    const diffPct = baselineWatts > 0 ? Math.round(((currentWatts - baselineWatts) / baselineWatts) * 100) : 0;
+
+    // Spike = at least 50% above baseline AND a meaningful absolute draw, so we
+    // don't flag noise when the house is basically idle (e.g. 5W -> 9W is "80%
+    // higher" but meaningless).
+    const MIN_WATTS_FOR_SPIKE = 300;
+    const isSpike = diffPct >= 50 && currentWatts >= MIN_WATTS_FOR_SPIKE;
+
+    res.json({ currentWatts, baselineWatts, diffPct, isSpike, comparedTo, at: latest.receivedAt });
+  } catch (err) {
+    console.error("Spike-check error:", err.message);
+    res.status(500).json({ error: "Failed to check for spikes" });
+  }
+});
+
+// GET /api/meter-reading/run-rate -> same ownership gate
+router.get("/run-rate", requireAuth, async (req, res) => {
+  try {
+    if (!OWNER_USER_ID || req.userId !== OWNER_USER_ID) {
+      return res.json({
+        unitsSoFar: 0, daysElapsed: 0, daysInMonth: 30,
+        velocity: 0, projected: 0, slabLimit: 300, zone: "green",
+      });
+    }
 
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

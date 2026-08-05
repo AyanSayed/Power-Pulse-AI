@@ -29,13 +29,7 @@ import BillHealthPage from "./pages/BillHealthPage";
 import { AuthProvider } from "./context/AuthContext";
 import { BillProvider } from "./context/BillContext";
 import { ToastProvider } from "./context/ToastContext";
-import { useBill } from "./context/BillContext";
-import { Navigate } from "react-router-dom";
 
-function Tier3Route({ children }) {
-  const { dataTier } = useBill();
-  return dataTier === 3 ? children : <Navigate to="/" replace />;
-}
 function App() {
   return (
     <BrowserRouter>
@@ -75,7 +69,7 @@ function App() {
                   <Route path="/profile/achievements" element={<ProfileAchievementsPage />} />
                   <Route path="/profile/appliance-profile" element={<ApplianceProfilePage />} />
 
-                  <Route path="/live-meter" element={<Tier3Route><LiveMeter /></Tier3Route>} />
+                  <Route path="/live-meter" element={<LiveMeter />} />
 
                 </Route>
               </Route>

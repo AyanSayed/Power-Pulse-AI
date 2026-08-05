@@ -130,9 +130,7 @@ function Sidebar({ isOpen, onClose }) {
       <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-6 space-y-2">
         {[
           ...navSections,
-          ...(dataTier === 3
-            ? [{ to: "/live-meter", label: "Live Meter", labelKey: "nav_liveMeter", icon: <FaChartLine /> }]
-            : []),
+          { to: "/live-meter", label: "Live Meter", labelKey: "nav_liveMeter", icon: <FaChartLine /> },
         ].map((section) => {
           if (!section.children) {
             return (

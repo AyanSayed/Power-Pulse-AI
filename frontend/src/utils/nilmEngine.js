@@ -182,12 +182,8 @@ export function tier3Breakdown(latestReadings = []) {
 // ---------------------------------------------------------------------------
 // Single entry point the rest of the app calls
 // ---------------------------------------------------------------------------
-export function estimateApplianceBreakdown({ tier, applianceProfile, weatherTemp, latestReadings }) {
-  if (tier === 3) {
-    const measured = tier3Breakdown(latestReadings);
-    if (measured) return measured;
-  }
-  if (tier >= 2) return tier2Breakdown({ applianceProfile, weatherTemp });
+export function estimateApplianceBreakdown({ hasApplianceProfile, applianceProfile, weatherTemp }) {
+  if (hasApplianceProfile) return tier2Breakdown({ applianceProfile, weatherTemp });
   return tier1Breakdown(weatherTemp);
 }
 

@@ -202,7 +202,7 @@ export function BillProvider({ children }) {
     : previousBill
     ? ((latestBill.units - previousBill.units) / previousBill.units) * 100
     : 0;
-
+  const weatherTemp = weather?.temperature ?? null;
   
 
   // Forecasts are ranges, not promises. Tier 2 narrows uncertainty using the
@@ -229,7 +229,6 @@ export function BillProvider({ children }) {
       ? "Loading AI insights..."
       : "Upload a few more bills so I can start comparing month-to-month trends.");
 
-  const weatherTemp = weather?.temperature ?? null;
 
 const weatherPenalty =
   weatherTemp && weatherTemp > 30 ? 6 : 0;
@@ -255,11 +254,10 @@ const energyScore = latestBill
 
 
   const applianceBreakdown = estimateApplianceBreakdown({
-    tier: dataTier,
-    applianceProfile,
-    weatherTemp,
-    latestReadings: latestMeterDoc?.readings,
-  });
+  hasApplianceProfile,
+  applianceProfile,
+  weatherTemp,
+});
 
 
   return (

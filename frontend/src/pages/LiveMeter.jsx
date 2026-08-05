@@ -1,28 +1,12 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import apiClient from "../services/apiClient";
 import MeterWidget from "../components/MeterWidget";
-const HIGHLIGHT_DURATION = 900; // ms, how long a value stays highlighted after changing
+import { billForUnits } from "../utils/slabRates";
 
-// Visual identity per appliance: icon, colored badge, and a short subtitle.
-const APPLIANCE_META = {
-  AC: { label: "Air Conditioner", icon: "ac_unit" },
-  WaterHeater: { label: "Water Heater", icon: "water_heater" },
-  Refrigerator: { label: "Refrigerator", icon: "kitchen" },
-  WashingMachine: { label: "Washing Machine", icon: "local_laundry_service" },
-  TV: { label: "TV", icon: "tv" },
-  Lights: { label: "Lights", icon: "lightbulb" },
-  Others: { label: "Other Appliances", icon: "bolt" },
-};
+const HIGHLIGHT_DURATION = 900; // ms, how long the total-power value stays highlighted after changing
+const HISTORY_LIMIT = 100; // how many past readings to pull for the history table
 
-// Consistent dark navy blue for every appliance icon box.
-const ICON_BG = "bg-[#1E3A8A]";
-const ICON_FG = "text-white";
-
-function getMeta(name) {
-  return APPLIANCE_META[name] || { label: name, icon: "bolt" };
-}
-
-function AppliancePastReadingsModal({ onClose }) {
+function ReadingsHistoryModal({ onClose }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,7 +14,7 @@ function AppliancePastReadingsModal({ onClose }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await apiClient.get("/api/meter-reading");
+        const res = await apiClient.get(`/api/meter-reading?limit=${HISTORY_LIMIT}`);
         const docs = Array.isArray(res.data) ? res.data : [];
 
         const todayStr = new Date().toDateString();
@@ -38,16 +22,34 @@ function AppliancePastReadingsModal({ onClose }) {
           (d) => d.receivedAt && new Date(d.receivedAt).toDateString() === todayStr
         );
 
-        // Flatten into one row per appliance reading, newest first.
-        const flat = [];
-        todaysDocs.forEach((doc) => {
-          (doc.readings || []).forEach((r) => {
-            flat.push({ ...r, receivedAt: doc.receivedAt });
-          });
-        });
-        flat.sort((a, b) => new Date(b.receivedAt) - new Date(a.receivedAt));
+        // Oldest-first so we can accumulate a running total, then reverse for display.
+        const sorted = [...todaysDocs].sort(
+          (a, b) => new Date(a.receivedAt) - new Date(b.receivedAt)
+        );
 
-        setRows(flat);
+        let cumulativeUnits = 0;
+        const built = sorted.map((doc, i) => {
+          const totalWatts = (doc.readings || []).reduce((sum, r) => sum + (r.power || 0), 0);
+
+          if (i > 0) {
+            const prev = sorted[i - 1];
+            const prevWatts = (prev.readings || []).reduce((sum, r) => sum + (r.power || 0), 0);
+            const dtHours = (new Date(doc.receivedAt) - new Date(prev.receivedAt)) / (1000 * 60 * 60);
+            if (dtHours > 0 && dtHours <= 1) {
+              cumulativeUnits += ((prevWatts + totalWatts) / 2 * dtHours) / 1000;
+            }
+          }
+
+          return {
+            receivedAt: doc.receivedAt,
+            totalWatts: Math.round(totalWatts * 100) / 100,
+            cumulativeUnits: Math.round(cumulativeUnits * 1000) / 1000,
+            billSoFar: billForUnits(cumulativeUnits),
+            fault: (doc.readings || []).some((r) => r.fault),
+          };
+        });
+
+        setRows(built.reverse()); // newest first for display
         setLoading(false);
       } catch (err) {
         console.error("History fetch failed:", err);
@@ -60,9 +62,9 @@ function AppliancePastReadingsModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900">Today's Past Readings</h3>
+          <h3 className="text-lg font-bold text-gray-900">Today's Reading History</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-700 transition-colors"
@@ -83,11 +85,9 @@ function AppliancePastReadingsModal({ onClose }) {
               <thead className="sticky top-0 bg-white">
                 <tr className="border-b border-gray-100 text-gray-500">
                   <th className="px-6 py-3">Time</th>
-                  <th className="px-6 py-3">Appliance</th>
-                  <th className="px-6 py-3">Voltage (V)</th>
-                  <th className="px-6 py-3">Current (A)</th>
-                  <th className="px-6 py-3">Power (W)</th>
-                  <th className="px-6 py-3">Fault</th>
+                  <th className="px-6 py-3">Total Draw (W)</th>
+                  <th className="px-6 py-3">Units So Far Today</th>
+                  <th className="px-6 py-3">Bill So Far Today</th>
                 </tr>
               </thead>
               <tbody>
@@ -96,19 +96,11 @@ function AppliancePastReadingsModal({ onClose }) {
                     <td className="px-6 py-2 text-gray-500">
                       {new Date(r.receivedAt).toLocaleTimeString()}
                     </td>
-                    <td className="px-6 py-2 font-medium text-gray-900">{getMeta(r.appliance).label}</td>
-                    <td className="px-6 py-2">{r.voltage}</td>
-                    <td className="px-6 py-2">{r.current}</td>
-                    <td className={`px-6 py-2 font-semibold ${r.fault ? "text-red-600" : ""}`}>{r.power}</td>
-                    <td className="px-6 py-2">
-                      {r.fault ? (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
-                          Fault
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-xs">None</span>
-                      )}
+                    <td className={`px-6 py-2 font-semibold ${r.fault ? "text-red-600" : "text-gray-900"}`}>
+                      {r.totalWatts}
                     </td>
+                    <td className="px-6 py-2">{r.cumulativeUnits}</td>
+                    <td className="px-6 py-2">₹{r.billSoFar}</td>
                   </tr>
                 ))}
               </tbody>
@@ -117,20 +109,20 @@ function AppliancePastReadingsModal({ onClose }) {
         </div>
       </div>
     </div>
-    
   );
 }
 
 function LiveMeter() {
-  const [readings, setReadings] = useState([]);
+  const [totalWatts, setTotalWatts] = useState(null);
+  const [hasFault, setHasFault] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [runRate, setRunRate] = useState(null);
 
-  // { [appliance]: { power: timestamp, ... } } — tracks which values just changed, to flash them
-  const [flash, setFlash] = useState({});
-  const prevReadingsRef = useRef({});
+  const [flashPower, setFlashPower] = useState(false);
+  const prevWattsRef = useRef(null);
 
   // Ticks every second purely to re-render the "updated Xs ago" freshness label —
   // without this, that label would only update when a new reading arrives, which
@@ -139,6 +131,27 @@ function LiveMeter() {
   useEffect(() => {
     const tick = setInterval(() => setNowTick(Date.now()), 1000);
     return () => clearInterval(tick);
+  }, []);
+
+  // Total units consumed + bill so far this month, from the run-rate endpoint.
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchRunRate = async () => {
+      try {
+        const res = await apiClient.get("/api/meter-reading/run-rate");
+        if (isMounted) setRunRate(res.data);
+      } catch (err) {
+        console.error("Run-rate fetch failed:", err);
+      }
+    };
+
+    fetchRunRate();
+    const interval = setInterval(fetchRunRate, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -156,31 +169,19 @@ function LiveMeter() {
           return;
         }
 
-        const prevByAppliance = prevReadingsRef.current;
-        const now = Date.now();
-        const newFlash = {};
+        const watts = latest.readings.reduce((sum, r) => sum + (r.power || 0), 0);
+        const roundedWatts = Math.round(watts * 100) / 100;
+        const fault = latest.readings.some((r) => r.fault);
 
-        latest.readings.forEach((r) => {
-          const prev = prevByAppliance[r.appliance];
-          if (prev) {
-            const changed = {};
-            if (prev.voltage !== r.voltage) changed.voltage = now;
-            if (prev.current !== r.current) changed.current = now;
-            if (prev.power !== r.power) changed.power = now;
-            if (prev.fault !== r.fault) changed.fault = now;
-            if (Object.keys(changed).length > 0) newFlash[r.appliance] = changed;
-          }
-        });
+        if (prevWattsRef.current !== null && prevWattsRef.current !== roundedWatts) {
+          setFlashPower(true);
+          setTimeout(() => setFlashPower(false), HIGHLIGHT_DURATION);
+        }
+        prevWattsRef.current = roundedWatts;
 
-        const nextPrev = {};
-        latest.readings.forEach((r) => {
-          nextPrev[r.appliance] = r;
-        });
-        prevReadingsRef.current = nextPrev;
-
-        setReadings(latest.readings);
+        setTotalWatts(roundedWatts);
+        setHasFault(fault);
         setLastUpdated(latest.receivedAt);
-        setFlash((old) => ({ ...old, ...newFlash }));
         setError(null);
         setLoading(false);
       } catch (err) {
@@ -198,27 +199,6 @@ function LiveMeter() {
       clearInterval(interval);
     };
   }, []);
-
-  useEffect(() => {
-    if (Object.keys(flash).length === 0) return;
-    const timeout = setTimeout(() => {
-      setFlash((old) => {
-        const now = Date.now();
-        const next = {};
-        for (const appliance of Object.keys(old)) {
-          const kept = {};
-          for (const field of Object.keys(old[appliance])) {
-            if (now - old[appliance][field] < HIGHLIGHT_DURATION) kept[field] = old[appliance][field];
-          }
-          if (Object.keys(kept).length > 0) next[appliance] = kept;
-        }
-        return next;
-      });
-    }, HIGHLIGHT_DURATION);
-    return () => clearTimeout(timeout);
-  }, [flash]);
-
-  const isFlashing = (appliance, field) => Boolean(flash[appliance]?.[field]);
 
   if (loading) return <p className="text-gray-400 p-6">Loading live readings...</p>;
   if (error) return <p className="text-red-500 p-6">{error}</p>;
@@ -243,64 +223,63 @@ function LiveMeter() {
           })()}
         </p>
       </div>
-       <MeterWidget />
-      {readings.length === 0 && (
+
+      {runRate && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Total Power Consumed</p>
+            <p className="text-3xl font-extrabold text-gray-900 mt-1">
+              {runRate.unitsSoFar} <span className="text-lg font-semibold">units</span>
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Day {Math.round(runRate.daysElapsed)} of {runRate.daysInMonth}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Bill So Far</p>
+            <p className="text-3xl font-extrabold text-emerald-600 mt-1">
+              ₹{billForUnits(runRate.unitsSoFar)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {totalWatts !== null && (
+        <div
+          className={`bg-white rounded-2xl border shadow-sm p-6 flex items-center justify-between transition-all duration-300 ${
+            hasFault ? "border-red-200 bg-red-50/40" : "border-gray-100"
+          } ${flashPower ? "ring-2 ring-amber-300" : ""}`}
+        >
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Current Total Draw</p>
+            <p className={`text-3xl font-extrabold mt-1 ${hasFault ? "text-red-600" : "text-emerald-600"}`}>
+              {totalWatts}
+              <span className="text-lg font-semibold ml-1">W</span>
+            </p>
+          </div>
+          {hasFault && (
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+              Fault detected
+            </span>
+          )}
+        </div>
+      )}
+
+      <MeterWidget />
+
+      {totalWatts === null && (
         <p className="text-gray-400">No readings yet. Make sure your ESP32 simulator is running.</p>
       )}
 
-      <div className="space-y-4">
-        {readings.map((r) => {
-          const meta = getMeta(r.appliance);
-          const flashing = isFlashing(r.appliance, "power");
-          return (
-            <div
-              key={r.appliance}
-              className={`bg-white rounded-2xl border shadow-sm hover:shadow-md p-6 flex items-center justify-between transition-all duration-300 ${
-                r.fault ? "border-red-200 bg-red-50/40" : "border-gray-100"
-              } ${flashing ? "ring-2 ring-amber-300" : ""}`}
-            >
-              <div className="flex items-center gap-5">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${ICON_BG}`}>
-                  <span className={`material-symbols-outlined text-3xl ${ICON_FG}`}>{meta.icon}</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">{meta.label}</h3>
-                  <p className="text-base text-gray-500 mt-0.5">
-                    {r.voltage}V &middot; {r.current}A
-                  </p>
-                  <span
-                    className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      r.fault ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
-                    }`}
-                  >
-                    {r.fault ? "Fault detected" : "Running normally"}
-                  </span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Current Draw</p>
-                <p className={`text-3xl font-extrabold mt-1 ${r.fault ? "text-red-600" : "text-emerald-600"}`}>
-                  {r.power}
-                  <span className="text-lg font-semibold ml-1">W</span>
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <button
+        onClick={() => setShowHistory(true)}
+        className="w-full py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+      >
+        See your reading history today
+      </button>
 
-      {readings.length > 0 && (
-        <button
-          onClick={() => setShowHistory(true)}
-          className="w-full py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-        >
-          See your past readings today
-        </button>
-      )}
-
-      {showHistory && <AppliancePastReadingsModal onClose={() => setShowHistory(false)} />}
+      {showHistory && <ReadingsHistoryModal onClose={() => setShowHistory(false)} />}
     </div>
-    
   );
 }
 

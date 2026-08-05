@@ -33,9 +33,23 @@ function AppliancesPage() {
         </Link>
       </div>
 
-      {dataTier >= 2 ? (
-        <ApplianceBreakdown data={applianceBreakdown} />
-      ) : (
+      {hasApplianceProfile ? (
+  <>
+    <p className="text-xs text-gray-400 -mt-4 mb-2">
+      Estimated from your appliance checklist — not measured per-device.
+    </p>
+    <ApplianceBreakdown data={applianceBreakdown} />
+    {dataTier === 3 && (
+      <p className="text-sm text-gray-500 mt-4">
+        Your smart meter measures total household draw, not individual appliances.
+        See live totals on the{" "}
+        <Link to="/live-meter" className="text-purple-600 font-medium hover:underline">
+          Live Meter page
+        </Link>.
+      </p>
+    )}
+  </>
+) : (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Unlock your appliance breakdown
