@@ -12,6 +12,11 @@ const AUDIT_SETTINGS = {
   TV: { mode: "generic" },
   Lights: { mode: "generic" },
 };
+const TIER_STATUS = {
+  1: { title: "Tier 1 · Profile needed", text: "Add appliance details to unlock formula-based cost scorecards.", classes: "bg-slate-50 border-slate-200 text-slate-800" },
+  2: { title: "Tier 2 · Appliance profile", text: "Costs below are calculated from the appliance details you entered.", classes: "bg-indigo-50 border-indigo-200 text-indigo-900" },
+  3: { title: "Tier 3 · Live meter connected", text: "Live meter data is available; these appliance scorecards still use only the details you entered.", classes: "bg-emerald-50 border-emerald-200 text-emerald-900" },
+};
 
 function efficiency(detail) {
   const rating = Number(detail?.starRating);
@@ -45,16 +50,19 @@ function scorecards(profile, billedUnits) {
 }
 
 export default function AppliancesPage() {
-  const { applianceProfile, latestBill, hasApplianceProfile } = useBill();
+  const { applianceProfile, latestBill, hasApplianceProfile, dataTier } = useBill();
   const entered = Object.entries(APPLIANCE_CATALOG).filter(([key]) => Number(applianceProfile?.[key]) > 0);
   const cards = scorecards(applianceProfile, latestBill?.units ?? 0);
   const missingDetails = entered.length > cards.length;
+  const tier = TIER_STATUS[dataTier] || TIER_STATUS[1];
 
   return <div className="space-y-8">
     <div className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-500 rounded-3xl p-8 text-white shadow-lg">
       <h1 className="text-4xl font-bold">Appliance Cost &amp; Efficiency Scorecard</h1>
       <p className="mt-3 text-purple-100 max-w-3xl leading-7">Calculated from your appliance details using standard wattage-based formulas and your current marginal electricity rate.</p>
     </div>
+
+    <div className={`rounded-2xl border p-5 ${tier.classes}`}><p className="font-semibold">{tier.title}</p><p className="mt-1 text-sm">{tier.text}</p></div>
 
     <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
       <div><p className="font-semibold text-emerald-900">Want real numbers, not an estimate?</p><p className="text-sm text-emerald-700">Enter your appliances' actual tonnage, star rating, and run hours for an independently computed cost â€” reconciled against your real bill.</p></div>

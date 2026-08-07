@@ -9,6 +9,7 @@ const BASELINE_HOURS = {
   heater: 1,
   lighting: 5,
 };
+const STAR_MULTIPLIER = { 3: 1, 4: 0.85, 5: 0.72 };
 
 function SimulatorPage() {
   const { predictedBill, applianceBreakdown } = useBill();
@@ -24,13 +25,17 @@ function SimulatorPage() {
   const [acAge, setAcAge] = useState(0);
   const [heaterAge, setHeaterAge] = useState(0);
   const [lightingAge, setLightingAge] = useState(0);
+  const [acRating, setAcRating] = useState(3);
+  const [heaterRating, setHeaterRating] = useState(3);
+  const [lightingRating, setLightingRating] = useState(3);
 
   const base = predictedBill || 0;
 
   const ageFactor = (years) => 1 + Math.min(0.2, Math.max(0, years) * 0.015);
-  const acCost = ((base * acPct) / 100) * (acHours / BASELINE_HOURS.ac) * ageFactor(acAge);
-  const heaterCost = ((base * heaterPct) / 100) * (heaterHours / BASELINE_HOURS.heater) * ageFactor(heaterAge);
-  const lightingCost = ((base * lightingPct) / 100) * (lightingHours / BASELINE_HOURS.lighting) * ageFactor(lightingAge);
+  const ratingFactor = (rating) => STAR_MULTIPLIER[rating] ?? 1;
+  const acCost = ((base * acPct) / 100) * (acHours / BASELINE_HOURS.ac) * ageFactor(acAge) * ratingFactor(acRating);
+  const heaterCost = ((base * heaterPct) / 100) * (heaterHours / BASELINE_HOURS.heater) * ageFactor(heaterAge) * ratingFactor(heaterRating);
+  const lightingCost = ((base * lightingPct) / 100) * (lightingHours / BASELINE_HOURS.lighting) * ageFactor(lightingAge) * ratingFactor(lightingRating);
   const fixedCost = (base * fixedPct) / 100;
 
   const simulatedBill = acCost + heaterCost + lightingCost + fixedCost;
@@ -44,6 +49,9 @@ function SimulatorPage() {
     setAcAge(0);
     setHeaterAge(0);
     setLightingAge(0);
+    setAcRating(3);
+    setHeaterRating(3);
+    setLightingRating(3);
   }
 
   return (
@@ -71,6 +79,7 @@ function SimulatorPage() {
             onChange={setAcHours}
           />
           <AgeField label="AC age" value={acAge} onChange={setAcAge} />
+          <RatingField label="AC star rating" value={acRating} onChange={setAcRating} />
           <SliderRow
             label="Water heater usage"
             value={heaterHours}
@@ -81,6 +90,7 @@ function SimulatorPage() {
             onChange={setHeaterHours}
           />
           <AgeField label="Water heater age" value={heaterAge} onChange={setHeaterAge} />
+          <RatingField label="Water heater star rating" value={heaterRating} onChange={setHeaterRating} />
           <SliderRow
             label="Lighting usage"
             value={lightingHours}
@@ -91,6 +101,7 @@ function SimulatorPage() {
             onChange={setLightingHours}
           />
           <AgeField label="Lighting age" value={lightingAge} onChange={setLightingAge} />
+          <RatingField label="Lighting star rating" value={lightingRating} onChange={setLightingRating} />
 
           <button
             onClick={reset}
@@ -188,6 +199,10 @@ function SliderRow({ label, value, min, max, step, unit, onChange }) {
 
 function AgeField({ label, value, onChange }) {
   return <label className="block text-sm font-medium text-gray-700">{label}<input type="number" min="0" max="30" value={value} onChange={(e) => onChange(Number(e.target.value))} className="ml-3 w-24 rounded-lg border border-gray-300 px-2 py-1" /> <span className="text-gray-500">years</span></label>;
+}
+
+function RatingField({ label, value, onChange }) {
+  return <label className="block text-sm font-medium text-gray-700">{label}<select value={value} onChange={(e) => onChange(Number(e.target.value))} className="ml-3 rounded-lg border border-gray-300 px-2 py-1"><option value={3}>3 Star</option><option value={4}>4 Star</option><option value={5}>5 Star</option></select></label>;
 }
 
 export default SimulatorPage;
