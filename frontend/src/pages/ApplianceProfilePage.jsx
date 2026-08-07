@@ -29,12 +29,16 @@ function ApplianceProfilePage() {
   const { applianceProfile, setApplianceProfile, pincode, setPincode, tierInfo } = useBill();
   const { showToast } = useToast();
 
-  const [form, setForm] = useState(() => ({ ...emptyApplianceProfile(), ...applianceProfile }));
+  const [form, setForm] = useState(() => ({ ...emptyApplianceProfile(), ...applianceProfile, details: applianceProfile?.details || {} }));
   const [pin, setPin] = useState(pincode || "");
 
   function updateCount(key, value) {
     const n = Math.max(0, Math.min(20, Number(value) || 0));
     setForm((prev) => ({ ...prev, [key]: n }));
+  }
+
+  function updateDetail(key, field, value) {
+    setForm((prev) => ({ ...prev, details: { ...prev.details, [key]: { ...prev.details[key], [field]: value } } }));
   }
 
   function handleSave(e) {
@@ -87,8 +91,9 @@ function ApplianceProfilePage() {
             {Object.entries(APPLIANCE_CATALOG).map(([key, meta]) => (
               <div
                 key={key}
-                className="flex items-center justify-between gap-4 border rounded-xl p-4 hover:shadow-sm transition"
+                className="border rounded-xl p-4 hover:shadow-sm transition"
               >
+                <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg ${COLORS[key]}`}>
                     {ICONS[key]}
@@ -116,6 +121,12 @@ function ApplianceProfilePage() {
                     +
                   </button>
                 </div>
+                </div>
+              {form[key] > 0 && <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 text-sm">
+                <label className="flex flex-col gap-1"><span className="text-gray-500">Hours/day</span><input type="number" min="0" max="24" step="0.5" value={form.details?.[key]?.hours ?? ""} onChange={(e) => updateDetail(key, "hours", e.target.value)} className="border rounded-lg px-2 py-1.5" /></label>
+                <label className="flex flex-col gap-1"><span className="text-gray-500">Star rating</span><select value={form.details?.[key]?.starRating ?? ""} onChange={(e) => updateDetail(key, "starRating", e.target.value)} className="border rounded-lg px-2 py-1.5"><option value="">Not rated</option>{[3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating} Star</option>)}</select></label>
+                {key === "AC" && <label className="flex items-center gap-2 mt-6"><input type="checkbox" checked={!!form.details?.AC?.inverter} onChange={(e) => updateDetail("AC", "inverter", e.target.checked)} />Inverter AC</label>}
+              </div>}
               </div>
             ))}
           </div>

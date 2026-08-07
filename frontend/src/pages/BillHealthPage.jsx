@@ -9,7 +9,7 @@ const COPY = {
   hi: { title: "बिल हेल्थ चेक", subtitle: "अपने बिजली बिल को आसान भाषा में समझें। यह उपकरणों की पहचान या सटीक भविष्यवाणी नहीं है।", listen: "सुनें", confidence: "विश्वास स्तर", scenarios: "अगले महीने की योजना", upload: "बिल अपलोड करें", action: "अगला सही कदम", normal: "सामान्य उपयोग", high: "एसी / मेहमान अधिक", away: "घर से बाहर" },
   mr: { title: "बिल हेल्थ चेक", subtitle: "तुमचे वीज बिल सोप्या भाषेत समजून घ्या. हे उपकरण ओळखणे किंवा अचूक अंदाज नाही.", listen: "ऐका", confidence: "विश्वास पातळी", scenarios: "पुढील महिन्याची योजना", upload: "बिल अपलोड करा", action: "पुढची योग्य कृती", normal: "नेहमीचा वापर", high: "एसी / पाहुणे अधिक", away: "घरापासून दूर" },
 };
-const scenarioOptions = [{ key: "normal", delta: 0 }, { key: "high", delta: 20 }, { key: "away", delta: -30 }];
+const scenarioOptions = [{ key: "normal", delta: 0 }, { key: "high", delta: 20 }, { key: "away", delta: -70 }];
 
 export default function BillHealthPage() {
   const { bills } = useBill(); const [lang, setLang] = useState("en"); const [scenario, setScenario] = useState("normal");

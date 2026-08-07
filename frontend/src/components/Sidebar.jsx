@@ -18,12 +18,10 @@ import {
   FaExclamationTriangle,
   FaPlug,
   FaCloud,
-  FaLeaf,
   FaChartArea,
   FaCloudUploadAlt,
   FaChartBar,
   FaIdCard,
-  FaTrophy,
   FaCalculator,
   FaTools,
   FaShieldAlt,
@@ -39,7 +37,7 @@ const navSections = [
     base: "/bills",
     children: [
       { to: "/bills/upload", label: "Upload Bill", labelKey: "nav_uploadBill", icon: <FaCloudUploadAlt /> },
-      { to: "/bills/daily-usage", label: "Daily Usage", labelKey: "nav_dailyUsage", icon: <FaChartBar /> },
+      { to: "/bills/daily-usage", label: "Daily Usage", labelKey: "nav_dailyUsage", icon: <FaChartBar />, minTier: 3 },
       { to: "/bills/history", label: "Bill History", labelKey: "nav_billHistory", icon: <FaHistory /> },
       { to: "/bills/health-check", label: "Bill Health Check", labelKey: "nav_billHealth", icon: <FaShieldAlt /> },
     ],
@@ -55,13 +53,11 @@ const navSections = [
       { to: "/ai-insights", label: "Insights", labelKey: "nav_insights", icon: <FaBrain />, end: true },
       { to: "/ai-insights/appliances", label: "Appliances", labelKey: "nav_appliances", icon: <FaPlug /> },
       { to: "/ai-insights/audit-matrix", label: "Audit Matrix", labelKey: "nav_auditMatrix", icon: <FaCalculator /> },
-      { to: "/ai-insights/carbon", label: "Carbon Footprint", labelKey: "nav_carbon", icon: <FaLeaf /> },
       { to: "/ai-insights/usage-trends", label: "Usage Trends", labelKey: "nav_usageTrends", icon: <FaChartArea /> },
     ],
   },
   { to: "/simulator", label: "Simulator", labelKey: "nav_simulator", icon: <FaSlidersH /> },
   { to: "/energy-tools", label: "Energy Tools", labelKey: "nav_energyTools", icon: <FaTools /> },
-  { to: "/ac-advisor", label: "AC Advisor", labelKey: "nav_acAdvisor", icon: <FaCalculator /> },
   { to: "/live-meter", label: "Live Meter", labelKey: "nav_liveMeter", icon: <FaChartLine /> },
   {
     key: "profile",
@@ -72,8 +68,7 @@ const navSections = [
     children: [
       { to: "/profile", label: "Overview", labelKey: "nav_profileOverview", icon: <FaUser />, end: true },
       { to: "/profile/home-details", label: "Home Details", labelKey: "nav_homeDetails", icon: <FaIdCard /> },
-      { to: "/profile/appliance-profile", label: "Appliance Profile", labelKey: "nav_applianceProfile", icon: <FaPlug /> },
-      { to: "/profile/achievements", label: "Achievements", labelKey: "nav_achievements", icon: <FaTrophy /> },
+      { to: "/profile/appliance-profile", label: "Appliance Profile", labelKey: "nav_applianceProfile", icon: <FaPlug />, maxTier: 2 },
     ],
   },
 ];
@@ -169,7 +164,7 @@ function Sidebar({ isOpen, onClose }) {
 
               {isOpen && (
                 <div className="mt-1 ml-4 pl-3 border-l border-navy-border space-y-1">
-                  {section.children.map((child) => (
+                  {section.children.filter((child) => (!child.minTier || dataTier >= child.minTier) && (!child.maxTier || dataTier <= child.maxTier)).map((child) => (
                     <NavLink
                       key={child.to}
                       to={child.to}

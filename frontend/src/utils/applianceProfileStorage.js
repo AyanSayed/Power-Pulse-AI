@@ -14,6 +14,7 @@ export function emptyApplianceProfile() {
     WashingMachine: 0,
     TV: 0,
     Lights: 0,
+    details: {},
   };
 }
 
@@ -21,7 +22,8 @@ export function loadApplianceProfile() {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
     if (!raw) return null;
-    return { ...emptyApplianceProfile(), ...JSON.parse(raw) };
+    const profile = { ...emptyApplianceProfile(), ...JSON.parse(raw) };
+    return { ...profile, details: profile.details || {} };
   } catch {
     return null;
   }

@@ -134,6 +134,10 @@ function EntryEditor({ entry, onChange, onRemove }) {
             className="border rounded-lg px-2 py-1.5"
           />
         </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-gray-500">Appliance age (years)</span>
+          <input type="number" min="0" max="30" value={entry.ageYears} onChange={(e) => set("ageYears", e.target.value)} className="border rounded-lg px-2 py-1.5" />
+        </label>
       </div>
     </div>
   );

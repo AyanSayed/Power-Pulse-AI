@@ -21,12 +21,16 @@ function SimulatorPage() {
   const [acHours, setAcHours] = useState(BASELINE_HOURS.ac);
   const [heaterHours, setHeaterHours] = useState(BASELINE_HOURS.heater);
   const [lightingHours, setLightingHours] = useState(BASELINE_HOURS.lighting);
+  const [acAge, setAcAge] = useState(0);
+  const [heaterAge, setHeaterAge] = useState(0);
+  const [lightingAge, setLightingAge] = useState(0);
 
   const base = predictedBill || 0;
 
-  const acCost = ((base * acPct) / 100) * (acHours / BASELINE_HOURS.ac);
-  const heaterCost = ((base * heaterPct) / 100) * (heaterHours / BASELINE_HOURS.heater);
-  const lightingCost = ((base * lightingPct) / 100) * (lightingHours / BASELINE_HOURS.lighting);
+  const ageFactor = (years) => 1 + Math.min(0.2, Math.max(0, years) * 0.015);
+  const acCost = ((base * acPct) / 100) * (acHours / BASELINE_HOURS.ac) * ageFactor(acAge);
+  const heaterCost = ((base * heaterPct) / 100) * (heaterHours / BASELINE_HOURS.heater) * ageFactor(heaterAge);
+  const lightingCost = ((base * lightingPct) / 100) * (lightingHours / BASELINE_HOURS.lighting) * ageFactor(lightingAge);
   const fixedCost = (base * fixedPct) / 100;
 
   const simulatedBill = acCost + heaterCost + lightingCost + fixedCost;
@@ -37,6 +41,9 @@ function SimulatorPage() {
     setAcHours(BASELINE_HOURS.ac);
     setHeaterHours(BASELINE_HOURS.heater);
     setLightingHours(BASELINE_HOURS.lighting);
+    setAcAge(0);
+    setHeaterAge(0);
+    setLightingAge(0);
   }
 
   return (
@@ -63,6 +70,7 @@ function SimulatorPage() {
             unit="hrs/day"
             onChange={setAcHours}
           />
+          <AgeField label="AC age" value={acAge} onChange={setAcAge} />
           <SliderRow
             label="Water heater usage"
             value={heaterHours}
@@ -72,6 +80,7 @@ function SimulatorPage() {
             unit="hrs/day"
             onChange={setHeaterHours}
           />
+          <AgeField label="Water heater age" value={heaterAge} onChange={setHeaterAge} />
           <SliderRow
             label="Lighting usage"
             value={lightingHours}
@@ -81,6 +90,7 @@ function SimulatorPage() {
             unit="hrs/day"
             onChange={setLightingHours}
           />
+          <AgeField label="Lighting age" value={lightingAge} onChange={setLightingAge} />
 
           <button
             onClick={reset}
@@ -174,6 +184,10 @@ function SliderRow({ label, value, min, max, step, unit, onChange }) {
       />
     </div>
   );
+}
+
+function AgeField({ label, value, onChange }) {
+  return <label className="block text-sm font-medium text-gray-700">{label}<input type="number" min="0" max="30" value={value} onChange={(e) => onChange(Number(e.target.value))} className="ml-3 w-24 rounded-lg border border-gray-300 px-2 py-1" /> <span className="text-gray-500">years</span></label>;
 }
 
 export default SimulatorPage;

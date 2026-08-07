@@ -7,7 +7,8 @@ import { useBill } from "../context/BillContext";
 const NAVIGATION = [
   { match: /upload|scan|photo|pdf/i, route: "/bills/upload", label: "Upload Bill" },
   { match: /budget|slab|limit|save/i, route: "/budget", label: "Budget & Slab Guard" },
-  { match: /appliance|ac|geyser/i, route: "/profile/appliance-profile", label: "Appliance Profile" },
+  { match: /ac advisor|ac size|air conditioner size/i, route: "/energy-tools/ac-advisor", label: "AC Advisor" },
+  { match: /appliance|geyser/i, route: "/profile/appliance-profile", label: "Appliance Profile" },
   { match: /history|old bill/i, route: "/bills/history", label: "Bill History" },
 ];
 
@@ -24,7 +25,6 @@ function AIHelperChat() {
     aiExplanation,
     weatherTemp,
     weatherHumidity,
-    carbonKg,
     applianceBreakdown,
     dataTier,
     tierInfo,
@@ -61,7 +61,6 @@ function AIHelperChat() {
           aiExplanation,
           weatherTemp,
           weatherHumidity,
-          carbonKg,
           applianceBreakdown,
           dataTier,
           tierLabel: tierInfo?.label ?? null,

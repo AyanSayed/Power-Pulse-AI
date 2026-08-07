@@ -238,13 +238,6 @@ const energyScore = latestBill
     )
   : 0;
 
-  const EMISSION_FACTOR = 0.82;
-  const carbonKg = latestBill
-  ? Math.round(latestBill.units * EMISSION_FACTOR)
-  : 0;
-
-
-
   const applianceBreakdown = estimateApplianceBreakdown({
   hasApplianceProfile,
   applianceProfile,
@@ -267,7 +260,6 @@ const energyScore = latestBill
         weatherTemp,
         weatherHumidity: weather?.humidity ?? null,
         weatherCondition: weather?.weathercode ?? null,
-        carbonKg,
         applianceBreakdown,
         generateExtraction,
         confirmBill,

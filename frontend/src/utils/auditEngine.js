@@ -35,6 +35,10 @@ const FRIDGE_BASE_WATTS = {
   "Side-by-Side / Frost-Free": 250,
 };
 
+function ageMultiplier(ageYears) {
+  return 1 + Math.min(0.2, Math.max(0, Number(ageYears) || 0) * 0.015);
+}
+
 export const AUDIT_APPLIANCE_TYPES = [
   { key: "AC", label: "Air Conditioner", mode: "ac" },
   { key: "Refrigerator", label: "Refrigerator", mode: "fridge" },
@@ -55,14 +59,14 @@ function resolveWatts(entry) {
     const tonnage = Number(entry.tonnage) || 1.5;
     const star = STAR_MULTIPLIER[Number(entry.starRating)] ?? 1.0;
     const inverter = entry.inverter ? INVERTER_MULTIPLIER : 1;
-    return tonnage * AC_WATTS_PER_TON * star * inverter;
+    return tonnage * AC_WATTS_PER_TON * star * inverter * ageMultiplier(entry.ageYears);
   }
   if (entry.mode === "fridge") {
     const base = FRIDGE_BASE_WATTS[entry.category] || FRIDGE_BASE_WATTS["Double Door"];
     const star = STAR_MULTIPLIER[Number(entry.starRating)] ?? 1.0;
-    return base * star;
+    return base * star * ageMultiplier(entry.ageYears);
   }
-  return Number(entry.watts) || 0;
+  return (Number(entry.watts) || 0) * ageMultiplier(entry.ageYears);
 }
 
 // Compute independent kWh + cost for one appliance entry.
@@ -83,6 +87,12 @@ function computeEntry(entry, totalBilledUnits) {
     monthlyKwh: Number(monthlyKwh.toFixed(1)),
     monthlyCost: Math.round(monthlyCost),
   };
+}
+
+// Shared by the Audit Matrix and the profile scorecard. Both surfaces use the
+// same wattage, efficiency and marginal-rate calculation.
+export function calculateApplianceCost(entry, totalBilledUnits = 0) {
+  return computeEntry(entry, totalBilledUnits);
 }
 
 // Full audit: per-entry results, totals, and a reconciliation against the
@@ -117,6 +127,7 @@ export function emptyEntry(type = AUDIT_APPLIANCE_TYPES[0]) {
     mode: type.mode,
     hours: type.mode === "ac" ? 5 : 2,
     quantity: 1,
+    ageYears: 0,
   };
   if (type.mode === "ac") return { ...base, tonnage: 1.5, starRating: 3, inverter: false };
   if (type.mode === "fridge") return { ...base, category: "Double Door", starRating: 3 };
