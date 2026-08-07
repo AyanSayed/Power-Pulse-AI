@@ -96,16 +96,18 @@ export default function LiveMeter() {
   if (loading) return <p className="text-gray-400 p-6">Loading live meter...</p>;
   if (error) return <p className="text-red-500 p-6">{error}</p>;
   const connected = !!lastReadingAt;
+  const latestMeterUnits = history.at(-1)?.meterUnits ?? 0;
 
   return <div className="p-6 md:p-8 w-full space-y-6">
     <section className="rounded-3xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 p-8 text-white shadow-lg">
       <p className="text-sm font-semibold uppercase tracking-wide text-cyan-100">Live meter</p>
-      <h1 className="mt-1 text-3xl font-bold">Household power at a glance</h1>
+      <h1 className="mt-1 text-3xl font-bold">Household energy at a glance</h1>
       <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-sm"><span className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-300 animate-pulse" : "bg-amber-300"}`} />{elapsedLabel(lastReadingAt)}</div>
     </section>
 
-    <div className="grid md:grid-cols-2 gap-6">
-      <section className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 transition-all duration-300 ${flashPower ? "ring-2 ring-amber-300" : ""}`}><p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Current power</p><p className="text-4xl font-extrabold text-emerald-600 mt-2">{formatPower(totalPower ?? 0)}</p></section>
+    <div className="grid md:grid-cols-3 gap-6">
+      <section className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 transition-all duration-300 ${flashPower ? "ring-2 ring-amber-300" : ""}`}><p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Live power draw</p><p className="text-4xl font-extrabold text-emerald-600 mt-2">{formatPower(totalPower ?? 0)}</p><p className="mt-2 text-xs text-gray-500">This changes as appliances turn on and off.</p></section>
+      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"><p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Current meter reading</p><p className="text-4xl font-extrabold text-indigo-700 mt-2">{latestMeterUnits.toFixed(3)} <span className="text-xl">kWh</span></p><p className="mt-2 text-xs text-gray-500">Cumulative energy; this only increases.</p></section>
       <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"><p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Bill so far</p><p className="text-4xl font-extrabold text-emerald-600 mt-2">{"\u20B9"}{billSoFar ?? 0}</p></section>
     </div>
 
