@@ -33,9 +33,6 @@ router.post("/", requireAuth, async (req, res) => {
   if (typeof context.weatherTemp === "number") {
     facts.push(`Current weather: ${context.weatherTemp}°C${typeof context.weatherHumidity === "number" ? `, ${context.weatherHumidity}% humidity` : ""}.`);
   }
-  if (typeof context.carbonKg === "number" && context.carbonKg > 0) {
-    facts.push(`Estimated carbon footprint: ${context.carbonKg} kg CO2 this month.`);
-  }
   if (Array.isArray(context.applianceBreakdown) && context.applianceBreakdown.length > 0) {
     const topAppliances = context.applianceBreakdown
       .slice(0, 5)
@@ -54,7 +51,7 @@ router.post("/", requireAuth, async (req, res) => {
   const prompt = `You are the friendly in-app assistant for PowerPulse, an Indian electricity bill app.
 Reply naturally and conversationally, in 1-3 short sentences.
 If the user greets you or makes small talk, respond normally like a helpful assistant would — don't deflect to app features unless asked.
-If they ask about their bill, usage trend, energy score, weather impact, carbon footprint, or appliance breakdown, answer using the real data below when it's available.
+If they ask about their bill, usage trend, energy score, weather impact, or appliance breakdown, answer using the real data below when it's available.
 Only mention app features (upload, budget, slab guard, appliance profile, bill history) when actually relevant to their question.
 Never claim to detect individual appliances with certainty or guarantee an exact future bill — appliance breakdowns and bill estimates are ranges/approximations, not guarantees.
 
