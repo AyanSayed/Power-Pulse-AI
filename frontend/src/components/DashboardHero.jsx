@@ -1,14 +1,6 @@
 import { FaBolt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
-
-function getTimeGreeting() {
-  const h = new Date().getHours();
-  if (h < 5) return "Still up";
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  if (h < 21) return "Good evening";
-  return "Winding down";
-}
+import { getTimeGreeting } from "../utils/greeting";
 
 function DashboardHero({ trendPercent }) {
   const { user } = useAuth();
