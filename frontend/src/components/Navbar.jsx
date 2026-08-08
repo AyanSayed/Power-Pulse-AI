@@ -95,7 +95,7 @@ function Navbar({ onMenuClick }) {
           </button>
           <div>
             <h2 className="font-display text-xl md:text-2xl font-bold text-ink">
-              Good evening, {firstName} 👋
+              Good morning, {firstName} 👋
             </h2>
             <p className="text-slate text-sm mt-0.5 hidden sm:block">
               Here's your electricity overview for today.
